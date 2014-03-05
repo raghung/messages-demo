@@ -15,8 +15,9 @@
         	<g:each in="${messages}" status="i" var="entry">
         		<div>${User.get(entry.fromId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${entry.dateCreated}"/></div>
         		<div><b><i>${entry.text}</i></b></div>
-        		<g:if test="${entry.photo}">
-  					<img style="width: 6.0em; height: 7.5em;" src="${createLink(controller:'message', action:'showImage', id: entry.ident())}" />
+        		<g:if test="${entry.fileName}">
+  					<img style="width: 12.0em; height: 15.0em;" src="${createLink(controller:'message', action:'showImage', id: entry.ident())}" />
+					<g:link action="download" id="${entry.id}">${entry.fileName}</g:link>
 				</g:if>
         		<div><hr></div>
         	</g:each>
@@ -28,8 +29,8 @@
 	                <input type="hidden" name="toId" value="${otherUser.id}" />
 	        		<textarea id="text" name="text" style="width:700px"></textarea>
 	        	</div>	
-			    <label for="photo">Upload Picture: </label>
-			    <input type="file" name="photo" id="photo"/>
+			    <label for="photo">Attachments: </label>
+			    <input type="file" name="file" id="file"/>
 			    <input type="submit" class="buttons" value="Send" />
 		    </g:uploadForm>
         </div>

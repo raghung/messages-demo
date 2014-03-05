@@ -1,5 +1,8 @@
 package com.messages
 
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
+
 import grails.plugin.springsecurity.annotation.Secured;
 
 @Secured(['ROLE_USER'])
@@ -87,13 +90,14 @@ class MessageController {
 
         if (toUser) {
             if (params.subject && params.text && params.text.size()<=5000) {
-				def photo = request.getFile("photo")
-				if (photo && !okcontents.contains(photo.getContentType())) {
-					flash.message = "Picture must be one of ${okcontents}"
+				MultipartFile file = request.getFile("file")
+				
+				if (!file.empty && !okcontents.contains(file.contentType) && file.bytes.size() > grailsApplication.config.maxAttachFileSize) {
+					flash.message = "File cannot be more than " + grailsApplication.config.error.maxAttachFileSize
 					return
 				} 
 					
-				mailMessagingService.sendMessage(currentUser, toUser, params.text, params.subject, photo)
+				mailMessagingService.sendMessage(currentUser, toUser, params.text, params.subject, file)
 				flash.message = 'Message sent successfully'//message(code: 'thread.success')
                 
             } else {
@@ -107,12 +111,23 @@ class MessageController {
 		def message = Message.get(params.id)
 		OutputStream out
 		
-		if (message && message.photo) {
-			response.contentType = message.photoType
-			response.contentLength = message.photo.size()
-			out = response.outputStream
-			out.write(message.photo)
-			out.close()
+		if (message && message.fileName) {
+			response.contentType = message.fileType
+			mailMessagingService.writeFile(message, response.getOutputStream())
+		}
+	}
+	
+	def download(long id) {
+		Message documentInstance = Message.get(id)
+		
+		if ( documentInstance == null) {
+			flash.message = "Message not found."
+			redirect (action:'inbox')
+		} else {
+			response.setContentType("APPLICATION/OCTET-STREAM")
+			response.setHeader("Content-Disposition", "Attachment;Filename=\"${documentInstance.fileName}\"")
+
+			mailMessagingService.writeFile(documentInstance, response.getOutputStream())
 		}
 	}
 	

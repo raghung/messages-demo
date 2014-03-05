@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="${resource(dir: 'css', file: 'main.css')}" type="text/css">
 	</head>
 	<body>
+		<g:if test="${flash.message}"><div style="color:red">${flash.message}</div></g:if>
 		<table>
 			<thead>
 				<tr>

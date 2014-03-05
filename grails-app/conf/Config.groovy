@@ -107,3 +107,20 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	'/**/favicon.ico':                ['permitAll']
 ]
 
+environments {
+	development {
+		attchmentUploadFolder = "c:/temp/upload/"
+	}
+	test {
+		attchmentUploadFolder = "/temp/upload/"
+	}
+	production {
+		attchmentUploadFolder = "/temp/upload/"
+	}
+}
+
+// Custom fields
+maxAttachFileSize=1024*1024*4 // 4 MB
+
+// Error fields
+error.maxAttachFileSize="4 MB"

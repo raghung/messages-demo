@@ -1,5 +1,6 @@
 package com.messages
 
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 /**
@@ -7,7 +8,9 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
  * @author Raghu Gorur
  */
 class ThreadMessageService {
-
+	
+	def grailsApplication
+	
     /**
      * Send a message from an user to another
      * @param fromId Id of the user that send the message
@@ -16,10 +19,10 @@ class ThreadMessageService {
      * @param toName Name of the user that receives the message, for sorting purposes
      * @param text The text of the message
      * @param subject The subject of the message
-     * @param photo The multipart file, image 
+     * @param Attached multipart file 
      * @return a Message
      */
-    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, String text, String subject, CommonsMultipartFile photo) {
+    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, String text, String subject, MultipartFile file) {
         def reply = false
         def s = subject?.trim()
 
@@ -32,9 +35,12 @@ class ThreadMessageService {
                 m.reply = true
                 m.numberOfMessagesOnThread = messagesOnThread.size() +1
             }
-			if (photo) {
-				m.photoType = photo.contentType
-				m.photo = photo.bytes 
+			// Attachments
+			if (!file.empty) {
+				m.fileType = file.contentType
+				m.fileName = file.originalFilename
+				m.storePath = grailsApplication.config.attchmentUploadFolder + fromId + "_" + m.dateCreated.getTime() + "_" + m.fileName
+				file.transferTo(new File(m.storePath)) 
 			}
             if (m.save()){
                 messagesOnThread.each{

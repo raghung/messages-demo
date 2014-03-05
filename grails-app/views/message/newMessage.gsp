@@ -19,8 +19,8 @@
                 <div>Sub: <input id="subject" class="subject" type="text" name="subject"/></div>
                 <br />
                 <div><textarea id="text" style="width:700px" name="text" maxlength="5000""></textarea></div>
-                <label for="photo">Upload Picture: </label>
-			    <input type="file" name="photo" id="photo"/>
+                <label for="photo">Attachment: </label>
+			    <input type="file" name="file" id="file"/>
 			    <input type="submit" class="buttons" value="Send" />
             </g:uploadForm>
         </div>

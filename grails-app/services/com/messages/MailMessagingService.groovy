@@ -2,10 +2,14 @@ package com.messages
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 class MailMessagingService {
 	def threadMessageService
+	def grailsApplication
+	
+	private static final okcontents = ['image/png', 'image/jpeg', 'image/gif']
 	
 	Map getAllMessages(userId, offset, itemsByPage, sort, order) {
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
@@ -19,8 +23,11 @@ class MailMessagingService {
 		return result
 	}
 		
-	Message sendMessage(User from, User to, String text, String subject, CommonsMultipartFile photo) {
-		return threadMessageService.sendThreadMessage(from.id, to.id, from.firstname+' '+from.lastname, to.firstname+' '+to.lastname, text, subject, photo)
+	Message sendMessage(User from, User to, String text, String subject, MultipartFile file) {
+		if (!file.empty && okcontents.contains(file.contentType) && file.bytes.size() > grailsApplication.config.maxAttachFileSize) {
+			// Perform Image size reduction
+		} 
+		return threadMessageService.sendThreadMessage(from.id, to.id, from.firstname+' '+from.lastname, to.firstname+' '+to.lastname, text, subject, file)
 	}
 	
 	List getUsersList(currUser) {
@@ -31,4 +38,21 @@ class MailMessagingService {
 		
 		return userList
 	}
+	
+	String writeFile(Message msg, OutputStream outputStream) {
+		def file = new File(msg.storePath)
+		def fileInputStream = new FileInputStream(file)
+
+		byte[] buffer = new byte[4096];
+		int len;
+		while ((len = fileInputStream.read(buffer)) > 0) {
+			outputStream.write(buffer, 0, len);
+		}
+
+		outputStream.flush()
+		outputStream.close()
+		fileInputStream.close()
+		
+		return "Successful"
+	} 
 }

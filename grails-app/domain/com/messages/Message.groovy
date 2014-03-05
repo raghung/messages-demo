@@ -6,12 +6,12 @@ import pl.burningice.plugins.image.ast.DBImageContainer;
 
 /**
  * Direct message sent between two users
- * Uses ids of the user instead of objects, in order have independent the plugin from the project user system
+ * Uses ids of the user instead of objects, in order have independent plugin from the project user system
  * @author Raghu Gorur
  */
 class Message {
 	
-	static final MAX_IMAGE_SIZE = 4194304 //4 MB
+	static final MAX_FILE_SIZE = 1024 * 1024 * 4//4194304 - 4 MB
 	
     /**
      * Id of the user that generates the message
@@ -41,7 +41,7 @@ class Message {
     /**
      * Date when the message was created
      */
-    Date dateCreated
+    Date dateCreated = new Date()
 
 
     ///////////////////////////////////////////
@@ -95,14 +95,19 @@ class Message {
 	 String otherName = ''
 	 
 	 /**
-	  * Photo to be uploaded with message
+	  * File name uploaded with message
 	  */
-	 byte[] photo
+	 String fileName
 	 
 	 /**
-	  * Type of uploaded image
+	  * File type uploaded with message
 	  */
-	 String photoType
+	 String fileType
+	 
+	 /**
+	  * Folder path where file is stored
+	  */
+	 String storePath
 	 
     static constraints = {
         subject nullable: true, blank: true
@@ -114,8 +119,9 @@ class Message {
         fromName nullable: true, blank: true
         toName nullable: true, blank: true
 		otherName nullable: true, blank: true
-		photo nullable: true, blank: false, maxSize: MAX_IMAGE_SIZE
-		photoType nullable:true 
+		fileName nullable: true, blank: true
+		fileType nullable:true, blank: true
+		storePath nullable:true, blank: true 
     }
 
     static mapping = {
