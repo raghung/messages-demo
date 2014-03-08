@@ -100,7 +100,7 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	'/':                              ['permitAll'],
 	'/index':                         ['permitAll'],
 	'/index.gsp':                     ['permitAll'],
-	'/dbconsole/*':                   ['ROLE_USER'],		
+	'/**/dbconsole/**':               ['permitAll'],		
 	'/**/js/**':                      ['permitAll'],
 	'/**/css/**':                     ['permitAll'],
 	'/**/images/**':                  ['permitAll'],
@@ -124,6 +124,7 @@ environments {
 
 // Custom fields
 maxAttachFileSize=1024*1024*4 // 4 MB
+maxMessageTextSize=5000
 imageOkContents = ['image/png', 'image/jpeg', 'image/gif']
 attachementNotOk = ['.EXE','.COM','.VB','.VBS','.VBE','.CMD','.BAT','.WS','.WSF','.SCR','.SHS','.PIF','.HTA','.JAR','.JS','.JSE','.LNK']
 

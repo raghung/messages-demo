@@ -9,8 +9,6 @@ class MailMessagingService {
 	def threadMessageService
 	def grailsApplication
 	
-	static final okcontents = ['image/png', 'image/jpeg', 'image/gif']
-	
 	Map getAllMessages(userId, offset, itemsByPage, sort, order) {
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
 
@@ -25,8 +23,12 @@ class MailMessagingService {
 		
 	String sendMessage(User from, User to, String text, String subject, MultipartFile file) {
 		
-		if (threadMessageService.sendThreadMessage(from.id, to.id, from.firstname+' '+from.lastname, to.firstname+' '+to.lastname, text, subject, file))
-			return 'Message sent successfully'
+		def msg = validateMessage(subject, text, file)
+		if (msg.empty && threadMessageService.sendThreadMessage(from.id, to.id, from.firstname+' '+from.lastname, to.firstname+' '+to.lastname, text, subject, file)) {
+			msg = 'Message sent successfully'
+		}
+
+		return msg 
 	}
 	
 	List getUsersList(currUser) {
@@ -53,5 +55,36 @@ class MailMessagingService {
 		fileInputStream.close()
 		
 		return "Successful"
-	} 
+	}
+	
+	private String validateMessage(String subject, String text, MultipartFile file) {
+		def msg = ""
+		def imageOkContents = grailsApplication.config.imageOkContents
+		def attachmentNotOk = grailsApplication.config.attachementNotOk
+		def maxTextSize = grailsApplication.config.maxMessageTextSize
+
+		if (subject && (text || !file.empty)) {
+			
+			if (text && text.size() > maxTextSize) {
+				msg = "Message text cannot be more than ${maxTextSize} characters"
+			}
+				
+			if (!file.empty) {
+				def fileExt = file.originalFilename.substring(file.originalFilename.indexOf(".")).toUpperCase()
+				if (attachmentNotOk.contains(fileExt)) {
+					
+					msg = "File with extension ${fileExt} cannot be attached"
+				} else if (!imageOkContents.contains(file.contentType) && file.bytes.size() > grailsApplication.config.maxAttachFileSize) {
+					
+					msg = "File cannot be more than " + grailsApplication.config.error.maxAttachFileSize
+				} 
+			}
+			
+		} else {
+			msg = 'Error sending message'//message(code: 'thread.error')
+		}
+		
+		return msg
+	}
+	
 }

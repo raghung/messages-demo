@@ -85,34 +85,11 @@ class MessageController {
 	}
     def saveNewMessage() {
         def currentUser = springSecurityService.currentUser
-		def imageOkContents = grailsApplication.config.imageOkContents
-		def attachmentNotOk = grailsApplication.config.attachementNotOk
         def toUser = User.get(params.toId)
+		def file = request.getFile("file")
 
         if (toUser) {
-            if (params.subject && params.text && params.text.size()<=5000) {
-				MultipartFile file = request.getFile("file")
-				
-				if (file.empty) {
-					
-					flash.message = "File doesn't exist"
-				} else {
-					def fileExt = file.originalFilename.substring(file.originalFilename.indexOf(".")).toUpperCase() 
-					if (attachmentNotOk.contains(fileExt)) {
-						
-						flash.message = "File with extension ${fileExt} cannot be attached"				 
-	                } else if (!imageOkContents.contains(file.contentType) && file.bytes.size() > grailsApplication.config.maxAttachFileSize) {
-						
-						flash.message = "File cannot be more than " + grailsApplication.config.error.maxAttachFileSize
-					} else {
-						
-						flash.message = mailMessagingService.sendMessage(currentUser, toUser, params.text, params.subject, file)//message(code: 'thread.success')
-					}
-				}
-                
-            } else {
-                flash.error = 'Error sending message'//message(code: 'thread.error')
-            }
+			flash.message = mailMessagingService.sendMessage(currentUser, toUser, params.text, params.subject, file)//message(code: 'thread.success')
         }
         redirect mapping: 'inbox'
     }
