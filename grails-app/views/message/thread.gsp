@@ -16,8 +16,9 @@
         		<div>${User.get(entry.fromId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${entry.dateCreated}"/></div>
         		<div><b><i>${entry.text}</i></b></div>
         		<g:if test="${entry.fileName}">
-  					<img style="width: 12.0em; height: 15.0em;" src="${createLink(controller:'message', action:'showImage', id: entry.ident())}" />
-					<g:link action="download" id="${entry.id}">${entry.fileName}</g:link>
+  					<img style="width: 12.0em;" src="${createLink(controller:'message', action:'showImage', id: entry.ident())}" />
+  					${entry.fileName}
+					<g:link action="download" id="${entry.id}">Download</g:link>
 				</g:if>
         		<div><hr></div>
         	</g:each>
@@ -30,9 +31,14 @@
 	        		<textarea id="text" name="text" style="width:700px"></textarea>
 	        	</div>	
 			    <label for="photo">Attachments: </label>
-			    <input type="file" name="file" id="file"/>
+			    <input type="file" name="file" id="upload-file"/>
 			    <input type="submit" class="buttons" value="Send" />
 		    </g:uploadForm>
         </div>
+        <g:javascript>
+        $('#upload-file').bind('change', function() {
+            alert('This file size is: ' + this.files[0].size/1024/1024 + "MB");
+        });
+        </g:javascript>
 	</body>
 </html>

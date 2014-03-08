@@ -12,7 +12,6 @@ class MessageController {
 	def springSecurityService
 	
 	static Integer ITEMS_BY_PAGE = 20
-	private static final okcontents = ['image/png', 'image/jpeg', 'image/gif']
 	
     def inbox() {
 		def currentUser = springSecurityService.currentUser
@@ -86,19 +85,30 @@ class MessageController {
 	}
     def saveNewMessage() {
         def currentUser = springSecurityService.currentUser
+		def imageOkContents = grailsApplication.config.imageOkContents
+		def attachmentNotOk = grailsApplication.config.attachementNotOk
         def toUser = User.get(params.toId)
 
         if (toUser) {
             if (params.subject && params.text && params.text.size()<=5000) {
 				MultipartFile file = request.getFile("file")
 				
-				if (!file.empty && !okcontents.contains(file.contentType) && file.bytes.size() > grailsApplication.config.maxAttachFileSize) {
-					flash.message = "File cannot be more than " + grailsApplication.config.error.maxAttachFileSize
-					return
-				} 
+				if (file.empty) {
 					
-				mailMessagingService.sendMessage(currentUser, toUser, params.text, params.subject, file)
-				flash.message = 'Message sent successfully'//message(code: 'thread.success')
+					flash.message = "File doesn't exist"
+				} else {
+					def fileExt = file.originalFilename.substring(file.originalFilename.indexOf(".")).toUpperCase() 
+					if (attachmentNotOk.contains(fileExt)) {
+						
+						flash.message = "File with extension ${fileExt} cannot be attached"				 
+	                } else if (!imageOkContents.contains(file.contentType) && file.bytes.size() > grailsApplication.config.maxAttachFileSize) {
+						
+						flash.message = "File cannot be more than " + grailsApplication.config.error.maxAttachFileSize
+					} else {
+						
+						flash.message = mailMessagingService.sendMessage(currentUser, toUser, params.text, params.subject, file)//message(code: 'thread.success')
+					}
+				}
                 
             } else {
                 flash.error = 'Error sending message'//message(code: 'thread.error')
@@ -131,6 +141,7 @@ class MessageController {
 		}
 	}
 	
-	def replyMessage() { }
 	def forwardMessage() { }
+	
+	def todo() { }
 }

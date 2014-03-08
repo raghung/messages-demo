@@ -3,6 +3,8 @@ package com.messages
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+import com.messages.image.ImageProcessing;
+
 /**
  * Service for the Thread messages
  * @author Raghu Gorur
@@ -39,8 +41,20 @@ class ThreadMessageService {
 			if (!file.empty) {
 				m.fileType = file.contentType
 				m.fileName = file.originalFilename
-				m.storePath = grailsApplication.config.attchmentUploadFolder + fromId + "_" + m.dateCreated.getTime() + "_" + m.fileName
-				file.transferTo(new File(m.storePath)) 
+				def newFileName = fromId + "_" + m.dateCreated.getTime() + "_" + m.fileName
+				m.storePath = grailsApplication.config.attchmentUploadFolder + newFileName
+				
+				def okcontents = grailsApplication.config.imageOkContents
+				if (okcontents.contains(file.contentType) && file.size > grailsApplication.config.maxAttachFileSize) {
+					def tempFile = new File(grailsApplication.config.tempAttachmentFolder + newFileName)
+					file.transferTo(tempFile)
+					ImageProcessing.reduceImageQuality(grailsApplication.config.maxAttachFileSize, grailsApplication.config.tempAttachmentFolder + newFileName, m.storePath, m.fileType)
+					tempFile.delete()					
+					
+				} else { 
+					file.transferTo(new File(m.storePath))
+				}
+				 
 			}
             if (m.save()){
                 messagesOnThread.each{

@@ -110,17 +110,22 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 environments {
 	development {
 		attchmentUploadFolder = "c:/temp/upload/"
+		tempAttachmentFolder = "c:/temp/"
 	}
 	test {
 		attchmentUploadFolder = "/temp/upload/"
+		tempAttachmentFolder = "/temp/"
 	}
 	production {
 		attchmentUploadFolder = "/temp/upload/"
+		tempAttachmentFolder = "/temp/"
 	}
 }
 
 // Custom fields
 maxAttachFileSize=1024*1024*4 // 4 MB
+imageOkContents = ['image/png', 'image/jpeg', 'image/gif']
+attachementNotOk = ['.EXE','.COM','.VB','.VBS','.VBE','.CMD','.BAT','.WS','.WSF','.SCR','.SHS','.PIF','.HTA','.JAR','.JS','.JSE','.LNK']
 
 // Error fields
 error.maxAttachFileSize="4 MB"

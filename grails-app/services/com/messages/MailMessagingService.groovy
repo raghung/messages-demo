@@ -9,7 +9,7 @@ class MailMessagingService {
 	def threadMessageService
 	def grailsApplication
 	
-	private static final okcontents = ['image/png', 'image/jpeg', 'image/gif']
+	static final okcontents = ['image/png', 'image/jpeg', 'image/gif']
 	
 	Map getAllMessages(userId, offset, itemsByPage, sort, order) {
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
@@ -23,11 +23,10 @@ class MailMessagingService {
 		return result
 	}
 		
-	Message sendMessage(User from, User to, String text, String subject, MultipartFile file) {
-		if (!file.empty && okcontents.contains(file.contentType) && file.bytes.size() > grailsApplication.config.maxAttachFileSize) {
-			// Perform Image size reduction
-		} 
-		return threadMessageService.sendThreadMessage(from.id, to.id, from.firstname+' '+from.lastname, to.firstname+' '+to.lastname, text, subject, file)
+	String sendMessage(User from, User to, String text, String subject, MultipartFile file) {
+		
+		if (threadMessageService.sendThreadMessage(from.id, to.id, from.firstname+' '+from.lastname, to.firstname+' '+to.lastname, text, subject, file))
+			return 'Message sent successfully'
 	}
 	
 	List getUsersList(currUser) {
