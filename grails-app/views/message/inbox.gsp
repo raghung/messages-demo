@@ -10,7 +10,12 @@
 		<table>
 			<thead>
 				<tr>
-					<td colspan=4 align="right"><g:link mapping="newMessage">New Message</g:link></td>
+					<td colspan=2 align="right"><g:link mapping="newMessage">New Message</g:link></td>
+					<td colspan=2>
+						<g:form controller="message" action="searchName">
+							<g:textField name="searchName" /><input type="submit" value="Search">
+						</g:form>
+					</td>
 				</tr>
 				<tr>
 					<td><b>User</b></td>

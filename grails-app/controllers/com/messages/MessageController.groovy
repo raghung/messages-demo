@@ -46,6 +46,14 @@ class MessageController {
 		render view:"inbox", model:[user:currentUser, messages:result.messages, totalNum:result.totalNum, unreadedNum:result.unreadedNum, max:ITEMS_BY_PAGE, sort:sort, order:order]
 	}
 	
+	def searchName() {
+		def currentUser = springSecurityService.currentUser
+		
+		List messages = mailMessagingService.searchPlease(currentUser.id, params.searchName)
+		
+		render view:"inbox", model:[user:currentUser, messages: messages, totalNum:messages.size()]
+	}
+	
 	def view() { 
 		def currentUser = springSecurityService.currentUser
 		def message = Message.get(params.messageId)

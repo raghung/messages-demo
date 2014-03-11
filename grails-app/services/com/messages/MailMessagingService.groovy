@@ -88,13 +88,30 @@ class MailMessagingService {
 		return msg
 	}
 	
-	private List searchPlease(Object domainClass, String searchText) {
-		/*def searchParams = [sort: 'address.street', order: 'asc', max: 10, offset: 0]
-		def searchProperties = [toId: "toId", addressLine1: "address.addressLine1", addressLine2: "address.addressLine2",
-		   zipCode: "address.zipCode", city: "address.city", country: "address.country", landlord: 'landlord.lastName']
-		def homeList = quickSearchService.search(domainClass: Home, searchParams: searchParams,
-		   searchProperties: searchProperties, query: "Lindwurmstr. 76")*/
-		return quickSearchService.search(domainClass: domainClass, query: searchText)
+	private List searchPlease(userId, searchText) {
+
+		/*db.collectionName.find([fieldName:[$regex:'pattern']])*/
+		def messages = Message.findAllByFromNameOrToNameIlike('%'+searchText +'%', '%'+searchText+'%', [sort:'dateCreated'])
+		
+		def resultMessages = []
+		while (messages) {
+			def message = messages[0]
+			def subjectGroup = messages.findAll{
+					it.subject == message.subject &&
+					((it.fromId == message.fromId && it.toId == message.toId) ||
+					(it.fromId == message.toId && it.toId == message.fromId))
+				}.sort{it.dateCreated}
+			resultMessages << subjectGroup.last()
+			messages = messages - subjectGroup
+		}
+		
+		// Set the other user who is in conversation with current user
+		for (message in resultMessages) {
+			def otherUser = message.fromId == userId? User.get(message.toId) : User.get(message.fromId)
+			message.otherName = otherUser.firstname + ' ' + otherUser.lastname
+		}
+		
+		return resultMessages 
 	}
 	
 }
