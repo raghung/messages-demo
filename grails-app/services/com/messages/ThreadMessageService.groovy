@@ -129,7 +129,7 @@ class ThreadMessageService {
      * @param message any of the messages on the thread
      * @return a list of Messages
      */
-     List<Message> findAllMessagesOnThread(Message message){
+     List<Message> findAllMessagesOnThread(Message message, String orderby='asc'){
          return Message.createCriteria().list{
              or{
                  and {
@@ -142,8 +142,9 @@ class ThreadMessageService {
                  }
              }
              eq 'subject', message.subject
+			 order 'dateCreated', orderby
          }
-
+		 
      }
 
      /**

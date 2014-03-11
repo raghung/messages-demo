@@ -8,6 +8,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 class MailMessagingService {
 	def threadMessageService
 	def grailsApplication
+	def quickSearchService
 	
 	Map getAllMessages(userId, offset, itemsByPage, sort, order) {
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
@@ -85,6 +86,15 @@ class MailMessagingService {
 		}
 		
 		return msg
+	}
+	
+	private List searchPlease(Object domainClass, String searchText) {
+		/*def searchParams = [sort: 'address.street', order: 'asc', max: 10, offset: 0]
+		def searchProperties = [toId: "toId", addressLine1: "address.addressLine1", addressLine2: "address.addressLine2",
+		   zipCode: "address.zipCode", city: "address.city", country: "address.country", landlord: 'landlord.lastName']
+		def homeList = quickSearchService.search(domainClass: Home, searchParams: searchParams,
+		   searchProperties: searchProperties, query: "Lindwurmstr. 76")*/
+		return quickSearchService.search(domainClass: domainClass, query: searchText)
 	}
 	
 }

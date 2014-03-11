@@ -1,3 +1,12 @@
+grails {
+	mongo {
+		host = "localhost"
+		port = 27017
+		username = ""
+		password = ""
+		databaseName = "messages-demo"
+	}
+}
 dataSource {
     pooled = true
     driverClassName = "org.h2.Driver"

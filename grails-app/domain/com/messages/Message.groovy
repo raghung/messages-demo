@@ -2,8 +2,6 @@ package com.messages
 
 import java.util.Date;
 
-import pl.burningice.plugins.image.ast.DBImageContainer;
-
 /**
  * Direct message sent between two users
  * Uses ids of the user instead of objects, in order have independent plugin from the project user system
@@ -12,6 +10,8 @@ import pl.burningice.plugins.image.ast.DBImageContainer;
 class Message {
 	
 	static final MAX_FILE_SIZE = 1024 * 1024 * 4//4194304 - 4 MB
+	
+	static mapWith = "mongo"
 	
     /**
      * Id of the user that generates the message
