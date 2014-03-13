@@ -11,7 +11,17 @@ class Message {
 	
 	static final MAX_FILE_SIZE = 1024 * 1024 * 4//4194304 - 4 MB
 	
+	/**
+	 * MongoDb mapping
+	 */
 	static mapWith = "mongo"
+	
+	/**
+	 *  Elastic search mapping
+	 */
+	static searchable = true/*{
+		only = ['fromName', 'toName', 'text', 'subject', 'fileName']
+	}*/
 	
     /**
      * Id of the user that generates the message
@@ -108,6 +118,16 @@ class Message {
 	  * Folder path where file is stored
 	  */
 	 String storePath
+	 
+	 /**
+	  * Id of the user that message is assigned(Staff to Physician or Vice versa)
+	  */
+	 //Long assignToId
+	 
+	 /**
+	  * Id of the user sending the message(Staff on behalf of Physician)
+	  */
+	 //Long sentById
 	 
     static constraints = {
         subject nullable: true, blank: true

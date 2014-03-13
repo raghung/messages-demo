@@ -8,7 +8,7 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 class MailMessagingService {
 	def threadMessageService
 	def grailsApplication
-	def quickSearchService
+	def elasticSearchService
 	
 	Map getAllMessages(userId, offset, itemsByPage, sort, order) {
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
@@ -25,8 +25,13 @@ class MailMessagingService {
 	String sendMessage(User from, User to, String text, String subject, MultipartFile file) {
 		
 		def msg = validateMessage(subject, text, file)
-		if (msg.empty && threadMessageService.sendThreadMessage(from.id, to.id, from.firstname+' '+from.lastname, to.firstname+' '+to.lastname, text, subject, file)) {
-			msg = 'Message sent successfully'
+		if (msg.empty) {
+			
+			if(threadMessageService.sendThreadMessage(from.id, to.id, from.firstname+' '+from.lastname, to.firstname+' '+to.lastname, text, subject, file)) {
+				msg = 'Message sent successfully'
+			} else {
+				msg = 'Message sending error'
+			}
 		}
 
 		return msg 
@@ -88,11 +93,20 @@ class MailMessagingService {
 		return msg
 	}
 	
-	private List searchPlease(userId, searchText) {
-
-		/*db.collectionName.find([fieldName:[$regex:'pattern']])*/
-		def messages = Message.findAllByFromNameOrToNameIlike('%'+searchText +'%', '%'+searchText+'%', [sort:'dateCreated'])
+	List searchName(long userId, String searchText) {
+		def messages = Message.findAllByFromNameOrToNameIlike('%'+searchText +'%', '%'+searchText+'%', [sort:'dateCreated', order:'desc'])
 		
+		return filterMessages(userId, messages) 
+	}
+	
+	Map searchAll(long userId, String searchText) {
+		def result = Message.search(searchText, [sort:'dateCreated', order:'desc'])
+		result.searchResults = filterMessages(userId, result.searchResults)
+		
+		return result
+	}
+	
+	private List filterMessages(long userId, List messages) {
 		def resultMessages = []
 		while (messages) {
 			def message = messages[0]
@@ -111,7 +125,7 @@ class MailMessagingService {
 			message.otherName = otherUser.firstname + ' ' + otherUser.lastname
 		}
 		
-		return resultMessages 
+		return resultMessages
 	}
 	
 }

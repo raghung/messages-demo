@@ -101,7 +101,6 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	'/index':                         ['permitAll'],
 	'/index.gsp':                     ['permitAll'],
 	'/**/dbconsole/**':               ['permitAll'],
-	'/**/searchable/**':              ['permitAll'],		
 	'/**/js/**':                      ['permitAll'],
 	'/**/css/**':                     ['permitAll'],
 	'/**/images/**':                  ['permitAll'],
@@ -122,6 +121,8 @@ environments {
 		tempAttachmentFolder = "/temp/"
 	}
 }
+
+elasticSearch.datastoreImpl = 'mongoDatastore'
 
 // Custom fields
 maxAttachFileSize=1024*1024*4 // 4 MB

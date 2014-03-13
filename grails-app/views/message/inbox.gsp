@@ -12,8 +12,8 @@
 				<tr>
 					<td colspan=2 align="right"><g:link mapping="newMessage">New Message</g:link></td>
 					<td colspan=2>
-						<g:form controller="message" action="searchName">
-							<g:textField name="searchName" /><input type="submit" value="Search">
+						<g:form controller="message" action="searchAll">
+							<g:textField name="searchText" /><input type="submit" value="Search">
 						</g:form>
 					</td>
 				</tr>

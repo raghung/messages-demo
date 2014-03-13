@@ -49,9 +49,18 @@ class MessageController {
 	def searchName() {
 		def currentUser = springSecurityService.currentUser
 		
-		List messages = mailMessagingService.searchPlease(currentUser.id, params.searchName)
+		List messages = mailMessagingService.searchName(currentUser.id, params.searchName)
+		//Map map = mailMessagingService.searchAll(currentUser.id, params.searchName)
 		
 		render view:"inbox", model:[user:currentUser, messages: messages, totalNum:messages.size()]
+	}
+	
+	def searchAll() {
+		def currentUser = springSecurityService.currentUser
+		
+		Map results = mailMessagingService.searchAll(currentUser.id, params.searchText)
+		
+		render view:"inbox", model:[user:currentUser, messages: results.searchResults, totalNum: results.total]
 	}
 	
 	def view() { 
