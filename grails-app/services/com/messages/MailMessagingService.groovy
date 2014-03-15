@@ -8,7 +8,6 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 class MailMessagingService {
 	def threadMessageService
 	def grailsApplication
-	def elasticSearchService
 	
 	Map getAllMessages(userId, offset, itemsByPage, sort, order) {
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)

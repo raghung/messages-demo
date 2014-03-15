@@ -10,6 +10,8 @@ class MessageController {
 	def threadMessageService
 	def mailMessagingService
 	def springSecurityService
+	def elasticSearchService
+	def elasticSearchAdminService
 	
 	static Integer ITEMS_BY_PAGE = 20
 	
@@ -44,6 +46,13 @@ class MessageController {
 		def result = mailMessagingService.getAllMessages(currentUser.id, offset, ITEMS_BY_PAGE, sort, order)
 		
 		render view:"inbox", model:[user:currentUser, messages:result.messages, totalNum:result.totalNum, unreadedNum:result.unreadedNum, max:ITEMS_BY_PAGE, sort:sort, order:order]
+	}
+	
+	def indexAll() {
+		elasticSearchService.index()
+		elasticSearchAdminService.refresh()
+		flash.message = "Indexing done.."
+		redirect mapping:"inbox"
 	}
 	
 	def searchName() {
@@ -107,6 +116,8 @@ class MessageController {
 
         if (toUser) {
 			flash.message = mailMessagingService.sendMessage(currentUser, toUser, params.text, params.subject, file)//message(code: 'thread.success')
+			elasticSearchService.index(class:Message)
+			elasticSearchAdminService.refresh()
         }
         redirect mapping: 'inbox'
     }

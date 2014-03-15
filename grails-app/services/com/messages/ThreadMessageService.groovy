@@ -62,7 +62,7 @@ class ThreadMessageService {
                      it.lastOnThread = false
                      it.save()
                  }
-
+				
                 return m
             }
         }
