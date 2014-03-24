@@ -1,3 +1,5 @@
+import com.messages.AddressBook;
+import com.messages.AddressCircle;
 import com.messages.Role;
 import com.messages.User;
 import com.messages.UserRole;

@@ -149,11 +149,5 @@ class MessageController {
 	def forwardMessage() { }
 	
 	def todo() { }
-	
-	def searchPlease() {
-		def currentUser = springSecurityService.currentUser
-		
-		mailMessagingService.searchPlease(params.searchText)
-		render view:"inbox", model:[messages:[]]
-	}
+
 }

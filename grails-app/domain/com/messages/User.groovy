@@ -16,12 +16,16 @@ class User {
 	static transients = ['springSecurityService']
 
 	static constraints = {
-		username blank: false, unique: true
+		username email: true, blank: false, unique: true
 		password blank: false
 	}
 
 	static mapping = {
 		password column: '`password`'
+	}
+	
+	String toString() {
+		return "${firstname} ${lastname}"
 	}
 
 	Set<Role> getAuthorities() {
