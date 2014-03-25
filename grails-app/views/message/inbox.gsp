@@ -8,6 +8,7 @@
 	<body>
 		<g:if test="${flash.message}"><div style="color:red">${flash.message}</div></g:if>
 		||&nbsp;<g:link mapping="inbox">Inbox</g:link>&nbsp;||&nbsp;<%--<g:link controller="message" action="indexAll">Index All</g:link>--%>
+		<g:link mapping="addressBook">Address Book</g:link>&nbsp;||&nbsp;
 		<table>
 			<thead>
 				<tr>

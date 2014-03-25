@@ -8,13 +8,11 @@ class AddressBook {
 	
 	String id
 	Long userId
-	List<Long> contacts
-	List<Long> circles
+	List contactIds = []
+	List circleIds = []
 	
 	static constraints = {
 		userId unique: true
     }
-	static embedded = {
-		'circles'
-	}
+
 }

@@ -146,6 +146,10 @@ class MessageController {
 		}
 	}
 	
+	def addressBook() {
+		redirect mapping: 'addressBook'
+	}
+	
 	def forwardMessage() { }
 	
 	def todo() { }

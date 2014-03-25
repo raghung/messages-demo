@@ -9,13 +9,17 @@ class AddressCircle {
 	String id
 	Long userId
 	String circlename
-	List<Long> contacts
-	List<Long> otherCircles
+	List contactIds = []
+	List otherCircleIds = []
 	
     static constraints = {
-		userId unique: true
-		circlename blank: false, unique: true
+		userId blank:false
+		circlename blank: false
     }
+	
+	static mapping = {
+		circlename index:true
+	}
 	
 	String toString() {
 		return circlename
