@@ -1,7 +1,11 @@
 package com.messages
 
 class Role {
-
+	/**
+	 * MongoDb mapping
+	 */
+	static mapWith = "mongo"
+	
 	String authority
 
 	static mapping = {

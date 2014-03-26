@@ -4,6 +4,11 @@ class User {
 
 	transient springSecurityService
 
+	/**
+	 * MongoDb mapping
+	 */
+	static mapWith = "mongo"
+	
 	String username
 	String password
 	String firstname

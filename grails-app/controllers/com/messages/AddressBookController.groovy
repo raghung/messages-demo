@@ -26,12 +26,12 @@ class AddressBookController {
 		def yamini = User.findByFirstname("Yamini")
 		def circle = AddressCircle.findByCirclename("Circle Admin")?:new AddressCircle(userId: raghu.id, circlename: 'Circle Admin')
 		circle.addToContactIds(yamini.id).save(flush:true, failOnError:true)
-		def raghuBook = AddressBook.findByUserId(raghu.id)
-		raghuBook.addToCircleIds(circle.id).save(flush:true, failOnError:true)
-		/*def raghuBook = AddressBook.findByUserId(raghu.id)?: new AddressBook(userId: raghu.id).addToContactIds(sundar.id)
+		/*def raghuBook = AddressBook.findByUserId(raghu.id)
+		raghuBook.addToCircleIds(circle.id).save(flush:true, failOnError:true)*/
+		def raghuBook = AddressBook.findByUserId(raghu.id)?: new AddressBook(userId: raghu.id).addToContactIds(sundar.id)
 																					.addToContactIds(yamini.id)
 																					.addToCircleIds(circle.id)
-																					.save(flush:true, failOnError: true)*/
+																					.save(flush:true, failOnError: true)
 																					 
 	}
 

@@ -23,6 +23,11 @@ class Message {
 		only = ['fromName', 'toName', 'text', 'subject', 'fileName']
 	}*/
 	
+	/**
+	 * Generated id for message
+	 */
+	String id
+	
     /**
      * Id of the user that generates the message
      */

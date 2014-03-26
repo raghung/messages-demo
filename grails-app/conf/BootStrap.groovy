@@ -9,7 +9,7 @@ class BootStrap {
 
     def init = { servletContext ->
 		
-		def raghu = new User(firstname:'Raghu', lastname:'Gorur', username:'raghu@onehaystack.com', password:'raghu', enabled:true).save(flush: true)
+		/*def raghu = new User(firstname:'Raghu', lastname:'Gorur', username:'raghu@onehaystack.com', password:'raghu', enabled:true).save(flush: true)
 		def sundar = new User(firstname:'Sundar', lastname:'Ramayya', username:'sundar@onehaystack.com', password:'sundar', enabled:true).save(flush: true)
 		def dilip = new User(firstname:'Dr. Dilip', lastname:'Parekh', username:'drdilip@onehaystack.com', password:'drdilip', enabled:true).save(flush: true)
 		def drraghu = new User(firstname:'Dr. Raghu', lastname:'', username:'drraghu@onehaystack.com', password:'drraghu', enabled:true).save(flush: true)
@@ -22,7 +22,7 @@ class BootStrap {
 		UserRole.create(sundar, userRole, true)
 		UserRole.create(dilip, doctorRole, true)
 		UserRole.create(drraghu, doctorRole, true)
-		UserRole.create(yamini, userRole, true)
+		UserRole.create(yamini, userRole, true)*/
 		
 		/*def message = mailMessagingService.sendMessage(raghu, sundar, "Hello Sundar", "Testing messages1", null)
 		message.readed = true
@@ -40,9 +40,9 @@ class BootStrap {
 		message.readed = true
 		message.save();*/
 		
-		assert User.count() == 5
+		/*assert User.count() == 5
 		assert Role.count() == 2
-		assert UserRole.count() == 5
+		assert UserRole.count() == 5*/
     }
     def destroy = {
     }

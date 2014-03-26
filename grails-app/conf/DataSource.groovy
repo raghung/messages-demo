@@ -4,7 +4,7 @@ grails {
 		port = 27017
 		username = ""
 		password = ""
-		databaseName = "messages-demo"
+		databaseName = "messages-db"
 	}
 }
 dataSource {
