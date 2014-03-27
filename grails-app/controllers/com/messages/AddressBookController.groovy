@@ -18,6 +18,38 @@ class AddressBookController {
 		render view:"book", model:[user: currentUser, addressList: result.addressList, circlesList: result.circlesList, userList: userList]
 	}
 	
+	def addContacts() {
+		def currentUser = springSecurityService.currentUser
+		def addressBook = AddressBook.findByUserId(currentUser.id)
+		addressBook.addToContactIds(currentUser.id)
+		
+		def result = User.findAll()
+		result -= User.findAllByIdInList(addressBook.contactIds) 
+				
+		render view:"addContacts", model:[user: currentUser, contactList: result]	
+	}
+	
+	def saveContacts() {
+		def currentUser = springSecurityService.currentUser
+
+		def addressBook = AddressBook.findByUserId(currentUser.id)
+		addressBook.contactIds += params.contacts.toList()
+		addressBook.save(flush:true, failOnError: true)
+		
+		flash.message = "Contacts added"
+		redirect action:"book"
+	}
+	
+	def removeContacts() {
+		def currentUser = springSecurityService.currentUser
+		if (params.contacts) {
+			flash.message = addressBookService.removeContacts(currentUser.id, params.contacts.toList())
+		}
+			
+		redirect action:"book"
+	}
+	
+	
 	def save() {
 		
 		def currentUser = springSecurityService.currentUser

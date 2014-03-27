@@ -9,6 +9,13 @@ class User {
 	 */
 	static mapWith = "mongo"
 	
+	/**
+	 *  Elastic search mapping
+	 */
+	static searchable = {
+		only = ['firstname', 'lastname']
+	}
+	
 	String username
 	String password
 	String firstname
@@ -27,6 +34,7 @@ class User {
 
 	static mapping = {
 		password column: '`password`'
+		compoundIndex firstname:1, lastname:1
 	}
 	
 	String toString() {
