@@ -11,32 +11,42 @@ class AddressBookController {
 	
 	def book() {
 		def currentUser = springSecurityService.currentUser
-		//save()
 		def result = addressBookService.getAddressBook(currentUser.id)
-		def userList = addressBookService.getUsersList(currentUser.id)
 		
-		render view:"book", model:[user: currentUser, addressList: result.addressList, circlesList: result.circlesList, userList: userList]
+		render view:"book", model:[user: currentUser, addressList: result.addressList, circlesList: result.circlesList]
 	}
 	
 	def addContacts() {
 		def currentUser = springSecurityService.currentUser
-		def addressBook = AddressBook.findByUserId(currentUser.id)
-		addressBook.addToContactIds(currentUser.id)
-		
-		def result = User.findAll()
-		result -= User.findAllByIdInList(addressBook.contactIds) 
+		def result = addressBookService.getContactsToAdd(currentUser.id) 
 				
-		render view:"addContacts", model:[user: currentUser, contactList: result]	
+		render view:"addContacts", model:[user: currentUser, contactList: result.contactList, currentList: result.currentList, circleList: result.circleList]	
 	}
 	
 	def saveContacts() {
 		def currentUser = springSecurityService.currentUser
 
-		def addressBook = AddressBook.findByUserId(currentUser.id)
-		addressBook.contactIds += params.contacts.toList()
-		addressBook.save(flush:true, failOnError: true)
+		if (params.contacts) {
+			flash.message = addressBookService.saveContacts(currentUser.id, params.contacts.toList())
+		}
+		redirect action:"book"
+	}
+	
+	def saveCircles() {
+		def currentUser = springSecurityService.currentUser
+
+		def circleName = params.circlename
+		if (!circleName.empty) {
+			flash.message = addressBookService.saveCircles(currentUser.id, circleName, params.currentContact, params.currentCircle)
+		}
 		
-		flash.message = "Contacts added"
+		redirect action:"book"
+	}
+	
+	def editCircle() {
+		def currentUser = springSecurityService.currentUser
+		println params.circleId
+		
 		redirect action:"book"
 	}
 	
@@ -45,7 +55,6 @@ class AddressBookController {
 		if (params.contacts) {
 			flash.message = addressBookService.removeContacts(currentUser.id, params.contacts.toList())
 		}
-			
 		redirect action:"book"
 	}
 	

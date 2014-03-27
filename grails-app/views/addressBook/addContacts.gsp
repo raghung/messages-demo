@@ -21,6 +21,26 @@
 			<tr><td><input type="submit" value="Add Contacts"></td></tr>
 		</table>
 		</g:form>
-
+		<hr>
+		<g:form controller="addressBook" action="saveCircles">
+		<table>
+			<tr><td><input type="text" name="circlename" placeholder="Enter Circle Name"></td></tr>
+			<tr>
+			<g:each in="${currentList}" var="contact">
+			<g:if test="${contact}">
+				<td><g:checkBox name="currentContact" value="${contact.id}" checked="false"/>&nbsp;|${contact.firstname} ${contact.lastname}|</td>
+			</g:if>
+			</g:each>
+			</tr>
+			<tr>
+			<g:each in="${circleList}" var="circle">
+			<g:if test="${circle}">
+				<td><g:checkBox name="currentCircle" value="${circle.id}" checked="false"/>&nbsp;|${circle.circlename}|</td>
+			</g:if>
+			</g:each>
+			</tr>
+			<tr><td><input type="submit" value="Add Circle"></td></tr>
+		</table>
+		</g:form>
 	</body>
 </html>

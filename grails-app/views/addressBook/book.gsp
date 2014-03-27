@@ -28,11 +28,11 @@
 		
 		<table>
 			<tr>
-				<td><b><u>Circles</u></b>&nbsp;- <g:link mapping="addCircle">Add</g:link></td>
+				<td><b><u>Circles</u></b>&nbsp;- <g:link controller="addressBook" action="addContacts">Add</g:link></td>
 			</tr>
 			<g:each in="${circlesList}" var="circle">
 			<tr>
-				<td><b><i>${circle.circlename}</i></b>&nbsp;- <g:link mapping="editCircle">Edit</g:link></td>
+				<td><b><i>${circle.circlename}</i></b>&nbsp;- <g:link controller="addressBook" action="editCircle" params="[circleId: circle.id]">Edit</g:link></td>
 			</tr>
 			<tr>
 			<g:each in="${circle.userList}" var="user">
