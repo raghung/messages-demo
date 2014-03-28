@@ -9,7 +9,14 @@ class AddressBookService {
 		def addressList = User.findAllByIdInList(addressBook.contactIds)
 		def circlesList = AddressCircle.findAllByIdInList(addressBook.circleIds)
 		for (circle in circlesList) {
-			circle['userList'] = User.findAllByIdInList(circle.contactIds)
+			def otherIds = []
+			for(otherCircleId in circle.otherCircleIds) {
+				def otherCircle = AddressCircle.findById(otherCircleId) 
+				if (otherCircle) {
+					otherIds += otherCircle.contactIds
+				}
+			}
+			circle['userList'] = User.findAllByIdInList(circle.contactIds + otherIds)
 		}
 		
 		def result = [:]
@@ -57,19 +64,32 @@ class AddressBookService {
 		return ""
 	}
 	
-	String saveCircles(Long userId, String circleName, String[] currentContact, String[] currentCircle) {
+	String saveCircles(Long userId, String circleName, currentContact, currentCircle) {
 		if (!circleName.empty) {
 			
 			def addressCircle = AddressCircle.findByUserIdAndCirclename(userId, circleName)?: new AddressCircle(userId: userId, circlename: circleName)
-			for (contact in currentContact) {
-				addressCircle.contactIds += contact
+			if (currentContact) {
+				def className = currentContact.getClass().getName()
+				if (className == 'java.lang.String') {
+					addressCircle.contactIds += currentContact
+				} else if (className == '[Ljava.lang.String;') {
+					for (contact in currentContact) {
+						addressCircle.contactIds += contact
+					}
+				}
+				addressCircle.contactIds = addressCircle.contactIds.unique() // Remove Duplicates
 			}
-			addressCircle.contactIds = addressCircle.contactIds.unique() // Remove Duplicates
-			
-			for (circle in currentCircle) {
-				addressCircle.otherCircleIds += circle
+			if (currentCircle) {
+				def className = currentCircle.getClass().getName()
+				if (className == 'java.lang.String') {
+					addressCircle.otherCircleIds += currentCircle
+				} else if (className == '[Ljava.lang.String;') {
+					for (circle in currentCircle) {
+						addressCircle.otherCircleIds += circle
+					}
+				}
+				addressCircle.otherCircleIds = addressCircle.otherCircleIds.unique() // Remove Duplicates
 			}
-			addressCircle.otherCircleIds = addressCircle.otherCircleIds.unique() // Remove Duplicates
 			addressCircle.save(flush:true, failOnError: true)
 			
 			def addressBook = AddressBook.findByUserId(userId)

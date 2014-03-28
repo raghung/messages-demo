@@ -9,13 +9,6 @@ class User {
 	 */
 	static mapWith = "mongo"
 	
-	/**
-	 *  Elastic search mapping
-	 */
-	static searchable = {
-		only = ['firstname', 'lastname']
-	}
-	
 	String username
 	String password
 	String firstname
