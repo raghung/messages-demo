@@ -32,10 +32,12 @@
 			</g:if>
 			</g:each>
 			</tr>
+		</table>
+		<table>
 			<tr>
 			<g:each in="${circleList}" var="circle">
 			<g:if test="${circle}">
-				<td><g:checkBox name="currentCircle" value="${circle.id}" checked="false"/>&nbsp;|${circle.circlename}|</td>
+				<td><g:checkBox name="currentCircle" value="${circle.id}" checked="false"/>&nbsp;Circle(${circle.circlename})</td>
 			</g:if>
 			</g:each>
 			</tr>

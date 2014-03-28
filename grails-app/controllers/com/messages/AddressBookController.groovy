@@ -27,7 +27,8 @@ class AddressBookController {
 		def currentUser = springSecurityService.currentUser
 
 		if (params.contacts) {
-			flash.message = addressBookService.saveContacts(currentUser.id, params.contacts.toList())
+			def contacts = addressBookService.getArray(params.contacts)
+			flash.message = addressBookService.saveContacts(currentUser.id, contacts)
 		}
 		redirect action:"book"
 	}
@@ -37,7 +38,9 @@ class AddressBookController {
 
 		def circleName = params.circlename
 		if (!circleName.empty) {
-			flash.message = addressBookService.saveCircles(currentUser.id, circleName, params.currentContact, params.currentCircle)
+			def currentContact = addressBookService.getArray(params.currentContact)
+			def currentCircle = addressBookService.getArray(params.currentCircle)
+			flash.message = addressBookService.saveCircles(currentUser.id, circleName, currentContact, currentCircle)
 		}
 		
 		redirect action:"book"
@@ -45,7 +48,26 @@ class AddressBookController {
 	
 	def editCircle() {
 		def currentUser = springSecurityService.currentUser
-		println params.circleId
+		def result = [:]
+
+		if (params.circleId) {
+			result = addressBookService.editCircle(currentUser.id, params.circleId)
+		}
+		
+		render view:"edit", model:[user: currentUser, editCircle: result.editCircle, contactList: result.contactList, 
+									circleList: result.circleList, addContactList: result.addContactList, addCircleList: result.addCircleList]
+	}
+	
+	def updateCircle() {
+		def currentUser = springSecurityService.currentUser
+		
+		if (params.circleId && params.circlename) {
+			def contacts = addressBookService.getArray(params.currentContact)
+			def circles = addressBookService.getArray(params.currentCircle)
+			def addContacts = addressBookService.getArray(params.addContact)
+			def addCircles = addressBookService.getArray(params.addCircle)
+			flash.message = addressBookService.updateCircle(params.circleId, params.circlename, contacts, circles, addContacts, addCircle)
+		}
 		
 		redirect action:"book"
 	}
@@ -53,11 +75,20 @@ class AddressBookController {
 	def removeContacts() {
 		def currentUser = springSecurityService.currentUser
 		if (params.contacts) {
-			flash.message = addressBookService.removeContacts(currentUser.id, params.contacts.toList())
+			def contacts = addressBookService.getArray(params.contacts)
+			flash.message = addressBookService.removeContacts(currentUser.id, contacts)
 		}
 		redirect action:"book"
 	}
 	
+	def removeCircles() {
+		def currentUser = springSecurityService.currentUser
+		if (params.circles) {
+			def circles = addressBookService.getArray(params.circles)
+			flash.message = addressBookService.removeCircles(currentUser.id, circles)
+		}
+		redirect action:"book"
+	}
 	
 	def save() {
 		

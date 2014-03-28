@@ -37,24 +37,99 @@ class AddressBookService {
 		return result 
 	}
 	
-	String removeContacts(Long userId, List delContacts) {
+	Map editCircle(Long userId, String circleId) {
+		def addressCircle = AddressCircle.findById(circleId)
+		def result = [:]
+		if (addressCircle) {
+			def currentContactIds = []
+			result.editCircle = addressCircle
+			result.contactList = User.findAllByIdInList(addressCircle.contactIds)
+			currentContactIds += addressCircle.contactIds
+			
+			def circles = AddressCircle.findAllByIdInList(addressCircle.otherCircleIds)
+			for (circle in circles) {
+				circle['contactList'] = User.findAllByIdInList(circle.contactIds)
+				currentContactIds += circle.contactIds
+			}
+			result.circleList = circles
+			
+			currentContactIds = currentContactIds.unique()
+			def addressBook = AddressBook.findByUserId(userId)
+			result.addContactList = User.findAllByIdInList(addressBook.contactIds - currentContactIds)
+			
+			def lstCircle = AddressCircle.findAllByUserId(userId)
+			def circleIds = []
+			for (circle in lstCircle) {
+				circleIds += circle.id
+			}
+			circleIds -= circleId
+			circleIds -= addressCircle.otherCircleIds
+			result.addCircleList = AddressCircle.findAllByIdInList(circleIds) 
+		}
+		
+		return result
+	}
+	
+	String removeContacts(Long userId, String[] delContacts) {
 		if (delContacts) {
 			def addressBook = AddressBook.findByUserId(userId)
+
 			// Remove contacts
-			for(contact in delContacts)
+			for (contact in delContacts) {
 				addressBook.contactIds -= contact
-				
+			}
 			addressBook.save(flush:true, failOnError: true)
+			
+			// Remove contacts in circles
+			for (circleId in addressBook.circleIds) {
+				def addressCircle = AddressCircle.findById(circleId)
+				for (contact in delContacts) {
+					addressCircle.contactIds -= contact
+				}
+				addressCircle.save(flush:true, failOnError: true)
+			}
+			
 			return "Contacts removed"
 		}
 		
 		return ""
 	}
 	
-	String saveContacts(Long userId, List contacts) {
+	String removeCircles(Long userId, String[] delCircles) {
+		if (delCircles) {
+			def addressBook = AddressBook.findByUserId(userId)
+
+			// Delete circles and remove from AddressBook 
+			for (circleId in delCircles) {
+				def addressCircle = AddressCircle.findById(circleId)
+				addressCircle.delete(flush: true, failOnError: true)
+				
+				addressBook.circleIds -= circleId
+			}
+			addressBook.save(flush: true, failOnError: true)
+			
+			// Remove circles from otherCircleIds
+			def lstCircles = AddressCircle.findAllByUserId(userId)
+			for(circle in lstCircles) {
+				for (circleId in delCircles) {
+					circle.otherCircleIds -= circleId
+				}
+				circle.save(flush: true, failOnError: true)
+			}
+			
+			return "Circles removed"
+		}
+		
+		return ""
+	}
+	
+	String saveContacts(Long userId, String[] contacts) {
 		if (contacts) {
 			def addressBook = AddressBook.findByUserId(userId)?: new AddressBook(userId: userId) 
-			addressBook.contactIds += contacts
+
+			for (contact in contacts) {
+				addressBook.contactIds += contact
+			}
 			addressBook.contactIds = addressBook.contactIds.unique()
 			addressBook.save(flush:true, failOnError: true)
 			
@@ -64,29 +139,32 @@ class AddressBookService {
 		return ""
 	}
 	
-	String saveCircles(Long userId, String circleName, currentContact, currentCircle) {
+	String[] getArray(value) {
+		def arrayVal = value
+		if (arrayVal) {
+			def className = arrayVal.getClass().getName()
+			if (className == 'java.lang.String') {
+				arrayVal = new String[1]
+				arrayVal[0] = value 
+			}
+		}
+		
+		return arrayVal
+	}
+	
+	String saveCircles(Long userId, String circleName, String[] currentContact, String[] currentCircle) {
 		if (!circleName.empty) {
 			
 			def addressCircle = AddressCircle.findByUserIdAndCirclename(userId, circleName)?: new AddressCircle(userId: userId, circlename: circleName)
 			if (currentContact) {
-				def className = currentContact.getClass().getName()
-				if (className == 'java.lang.String') {
-					addressCircle.contactIds += currentContact
-				} else if (className == '[Ljava.lang.String;') {
-					for (contact in currentContact) {
-						addressCircle.contactIds += contact
-					}
+				for (contact in currentContact) {
+					addressCircle.contactIds += contact
 				}
 				addressCircle.contactIds = addressCircle.contactIds.unique() // Remove Duplicates
 			}
 			if (currentCircle) {
-				def className = currentCircle.getClass().getName()
-				if (className == 'java.lang.String') {
-					addressCircle.otherCircleIds += currentCircle
-				} else if (className == '[Ljava.lang.String;') {
-					for (circle in currentCircle) {
-						addressCircle.otherCircleIds += circle
-					}
+				for (circle in currentCircle) {
+					addressCircle.otherCircleIds += circle
 				}
 				addressCircle.otherCircleIds = addressCircle.otherCircleIds.unique() // Remove Duplicates
 			}
@@ -99,6 +177,38 @@ class AddressBookService {
 			}
 			
 			return "Circle updated"
+		}
+		
+		return ""
+	}
+	
+	String updateCircle(String circleId, String circlename, String[] contacts, String[] circles, String[] addContacts, String[] addCircles) {
+		def addressCircle = AddressCircle.findById(circleId)
+		
+		if (addressCircle) {
+			addressCircle.circlename = circlename
+			
+			for (contact in contacts) {
+				addressCircle.contactIds -= contact
+			}
+			
+			for (circle in circles) {
+				addressCircle.otherCircleIds -= circle
+			}
+			
+			for (contact in addContacts) {
+				addressCircle.contactIds += contact
+			}
+			
+			for (circle in addCircles) {
+				addressCircle.otherCircleIds += circle
+			}
+			
+			addressCircle.contactIds = addressCircle.contactIds.unique()
+			addressCircle.otherCircleIds = addressCircle.otherCircleIds.unique()
+			addressCircle.save(flush: true, failOnError: true)
+			
+			return "${circlename} updated"
 		}
 		
 		return ""

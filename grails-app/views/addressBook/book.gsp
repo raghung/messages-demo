@@ -26,23 +26,26 @@
 		</table>
 		</g:form>
 		
+		<g:form controller="addressBook" action="removeCircles">
 		<table>
 			<tr>
 				<td><b><u>Circles</u></b>&nbsp;- <g:link controller="addressBook" action="addContacts">Add</g:link></td>
 			</tr>
 			<g:each in="${circlesList}" var="circle">
 			<tr>
-				<td><b><i>${circle.circlename}</i></b>&nbsp;- <g:link controller="addressBook" action="editCircle" params="[circleId: circle.id]">Edit</g:link></td>
+				<td><g:checkBox name="circles" value="${circle.id}" checked="false"/>&nbsp;
+					<b>Circle(<i>${circle.circlename}</i>)</b>&nbsp;- <g:link controller="addressBook" action="editCircle" params="[circleId: circle.id]">Edit</g:link></td>
 			</tr>
 			<tr>
 			<g:each in="${circle.userList}" var="user">
 			<g:if test="${user}">
-				<td><g:checkBox name="cirContacts" value="${circle.id} + '|' + ${user.id}" checked="false"/>&nbsp;|${user.firstname} ${user.lastname}|</td>
+				<td>&nbsp;|${user.firstname} ${user.lastname}|</td>
 			</g:if>
 			</g:each>
 			</tr>
 			</g:each>
-			<tr><td><input type="button" value="Delete Circle Contacts"></td></tr>
+			<tr><td><input type="submit" value="Delete Circles"></td></tr>
 		</table>
+		</g:form>
 	</body>
 </html>
