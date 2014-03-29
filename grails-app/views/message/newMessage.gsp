@@ -13,7 +13,10 @@
                 <div>
 	                Message To:<br>
 	                <g:each in="${userList}" var="user">
-	                <p><input type="radio" name="toId" value="${user.id}"> ${user.firstname} ${user.lastname}</p>
+	                <p>&nbsp; <g:checkBox name="contacts" value="${user.id}" checked="false"/> ${user.firstname} ${user.lastname}</p>
+	                </g:each>
+	                <g:each in="${circleList}" var="circle">
+	                <p>&nbsp; <g:checkBox name="circles" value="${circle.id}" checked="false"/> Circle(${circle.circlename})</p>
 	                </g:each>
             	</div>
                 <div>Sub: <input id="subject" class="subject" type="text" name="subject"/></div>

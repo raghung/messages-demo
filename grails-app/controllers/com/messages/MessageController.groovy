@@ -9,6 +9,7 @@ import grails.plugin.springsecurity.annotation.Secured;
 class MessageController {
 	def threadMessageService
 	def mailMessagingService
+	def addressBookService
 	def springSecurityService
 	def elasticSearchService
 	def elasticSearchAdminService
@@ -98,9 +99,10 @@ class MessageController {
 	def newMessage() {
 		def type = params.messageType // patient(normal, follow up), physician(normal, practice group)
 		def currentUser = springSecurityService.currentUser
-		def userList = mailMessagingService.getUsersList(currentUser.username)
+		//def userList = mailMessagingService.getUsersList(currentUser.username)
+		def result = addressBookService.getAddressBook(currentUser.id)
 		
-		render view: 'newMessage', model:[user: currentUser, userList: userList]
+		render view: 'newMessage', model:[user: currentUser, userList: result.addressList, circleList: result.circlesList]
 		
 		/*def otherUser = User.get(params.toId)
 		if (otherUser) {
@@ -111,11 +113,14 @@ class MessageController {
 	}
     def saveNewMessage() {
         def currentUser = springSecurityService.currentUser
-        def toUser = User.get(params.toId)
+        //def toUser = User.get(params.toId)
 		def file = request.getFile("file")
 
-        if (toUser) {
-			flash.message = mailMessagingService.sendMessage(currentUser, toUser, params.text, params.subject, file)//message(code: 'thread.success')
+        if (params.contacts || params.circles) {
+			def contacts = addressBookService.getArray(params.contacts)
+			def circles = addressBookService.getArray(params.circles)
+			
+			flash.message = mailMessagingService.sendMessage(currentUser, contacts, circles, params.text, params.subject, file)//message(code: 'thread.success')
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
         }

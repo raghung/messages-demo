@@ -66,7 +66,7 @@ class AddressBookController {
 			def circles = addressBookService.getArray(params.currentCircle)
 			def addContacts = addressBookService.getArray(params.addContact)
 			def addCircles = addressBookService.getArray(params.addCircle)
-			flash.message = addressBookService.updateCircle(params.circleId, params.circlename, contacts, circles, addContacts, addCircle)
+			flash.message = addressBookService.updateCircle(params.circleId, params.circlename, contacts, circles, addContacts, addCircles)
 		}
 		
 		redirect action:"book"
