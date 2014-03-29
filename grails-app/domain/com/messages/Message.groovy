@@ -125,6 +125,11 @@ class Message {
 	 String storePath
 	 
 	 /**
+	  * Map containing forwarded messages 
+	  */
+	 List forwardMessage = []
+	  
+	 /**
 	  * Id of the user that message is assigned(Staff to Physician or Vice versa)
 	  */
 	 //Long assignToId

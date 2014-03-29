@@ -63,6 +63,48 @@ class MailMessagingService {
 		return 'Message sending error' 
 	}
 	
+	String forwardMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file) {
+		
+		def msg = validateMessage(subject, text, file)
+		if (msg.empty) {
+			
+			def toIds = []
+			for (contactId in contacts) {
+				toIds += contactId
+			}
+			
+			for (circleId in circles) {
+				def addressCircle = AddressCircle.findById(circleId)
+				if (addressCircle) {
+					for (contactId in addressCircle.contactIds) {
+						toIds += contactId
+					}
+					
+					// other circles ids
+					for (otherCircleId in addressCircle.otherCircleIds) {
+						def otherCircle = AddressCircle.findById(otherCircleId)
+						if (otherCircle) {
+							for (contactId in otherCircle.contactIds) {
+								toIds += contactId
+							}
+						}
+					}
+				}
+			}
+			
+			toIds = toIds.unique()
+			
+			for (toId in toIds) {
+				def toUser = User.findById(toId)
+				threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, text, subject, file)
+			}
+				
+			return 'Message sent successfully'
+		}
+
+		return 'Message sending error'
+	}
+	
 	List getUsersList(currUser) {
 		def query = User.where {
 			username != currUser

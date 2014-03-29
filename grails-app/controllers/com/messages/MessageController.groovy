@@ -90,7 +90,11 @@ class MessageController {
 				}
 
 				def otherUser = message.fromId == currentUser.id?User.get(message.toId):User.get(message.fromId)
-				render view:'thread', model:[user:currentUser, messages:messages, subject:message.subject, otherUser:otherUser]
+				def addressBook = AddressBook.findByUserId(currentUser.id)
+				def contactList = User.findAllByIdInList(addressBook.contactIds - otherUser.id.toString())
+				def circleList = AddressCircle.findAllByIdInList(addressBook.circleIds)
+				
+				render view:'thread', model:[user:currentUser, messages:messages, subject:message.subject, otherUser:otherUser, contactList: contactList, circleList: circleList]
 		} else {
 			redirect mapping: 'inbox'
 		}
@@ -126,6 +130,29 @@ class MessageController {
         }
         redirect mapping: 'inbox'
     }
+	
+	def saveThreadMessage() {
+		def currentUser = springSecurityService.currentUser
+		def toUser = User.get(params.toId)
+		def file = request.getFile("file")
+
+		if (params.contacts || params.circles) { // Forward Message
+			def contacts = addressBookService.getArray(params.contacts)
+			def circles = addressBookService.getArray(params.circles)
+			
+			flash.message = mailMessagingService.forwardMessage(currentUser, contacts, circles, params.text, params.subject, file)//message(code: 'thread.success')
+			elasticSearchService.index(class:Message)
+			elasticSearchAdminService.refresh()
+			
+		} else if (params.toId) { // Normal reply
+			
+			def contacts = addressBookService.getArray(params.toId)
+			flash.message = mailMessagingService.sendMessage(currentUser, contacts, null, params.text, params.subject, file)//message(code: 'thread.success')
+			elasticSearchService.index(class:Message)
+			elasticSearchAdminService.refresh()
+		}
+		redirect mapping: 'inbox'
+	}
 	
 	def showImage() {
 		def message = Message.get(params.id)
