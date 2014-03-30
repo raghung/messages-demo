@@ -21,7 +21,7 @@
 	            <p>&nbsp; <g:checkBox name="circles" value="${circle.id}" checked="false"/> Circle(${circle.circlename})</p>
             </g:each>
         </div>
-        <div><b>Sub: <i>${messages[0].subject}</i></b></div>
+        <div><b>Sub: <i>${messages[0].subject}</i></b><input type="hidden" name="messageId" value="${messages[0].id}"></div>
         <div><hr></div>
         <div>
         	<g:each in="${messages}" status="i" var="entry">
@@ -33,6 +33,21 @@
 					<g:link action="download" id="${entry.id}">Download</g:link>
 				</g:if>
         		<div><hr></div>
+        		<g:if test="${entry.forwardMessage}">
+        		<div>-- Forward Message --</div>
+        		<g:each in="${entry.forwardMessage}" var="forward">
+        			<g:if test="${forward}">
+        			<div>${User.get(forward.fromId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${forward.dateCreated}"/></div>
+        			<div><b><i>${forward.text}</i></b></div>
+        			<g:if test="${forward.fileName}">
+  						<img style="width: 12.0em;" src="${createLink(controller:'message', action:'showImage', id: forward.ident())}" />
+  						${forward.fileName}
+					<g:link action="download" id="${forward.id}">Download</g:link>
+					</g:if>
+        			<div><hr></div>
+        			</g:if>
+        		</g:each>
+        		</g:if>
         	</g:each>
         </div>
        	<div>	

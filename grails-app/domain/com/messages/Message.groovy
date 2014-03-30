@@ -139,6 +139,8 @@ class Message {
 	  */
 	 //Long sentById
 	 
+	 static embedded = ['forwardMessage']
+	 
     static constraints = {
         subject nullable: true, blank: true
         reply nullable: true

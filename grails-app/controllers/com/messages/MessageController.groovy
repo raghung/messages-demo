@@ -139,8 +139,7 @@ class MessageController {
 		if (params.contacts || params.circles) { // Forward Message
 			def contacts = addressBookService.getArray(params.contacts)
 			def circles = addressBookService.getArray(params.circles)
-			
-			flash.message = mailMessagingService.forwardMessage(currentUser, contacts, circles, params.text, params.subject, file)//message(code: 'thread.success')
+			flash.message = mailMessagingService.forwardMessage(currentUser, contacts, circles, params.messageId, params.text, params.subject, file)//message(code: 'thread.success')
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
 			

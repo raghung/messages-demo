@@ -21,10 +21,11 @@ class ThreadMessageService {
      * @param toName Name of the user that receives the message, for sorting purposes
      * @param text The text of the message
      * @param subject The subject of the message
-     * @param Attached multipart file 
+     * @param Attached multipart file
+     * @param forwardMsg Forwarding message 
      * @return a Message
      */
-    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, String text, String subject, MultipartFile file) {
+    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, String text, String subject, MultipartFile file, List forwardMsg = []) {
         def reply = false
         def s = subject?.trim()
 
@@ -55,6 +56,13 @@ class ThreadMessageService {
 					file.transferTo(new File(m.storePath))
 				}
 				 
+			}
+			// Forward Msg
+			if (forwardMsg) {
+				for (msg in forwardMsg) {
+					m.forwardMessage += msg
+				}
+				m.subject = "Fwd:" + m.subject
 			}
             if (m.save()){
                 messagesOnThread.each{

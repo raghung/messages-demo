@@ -63,7 +63,7 @@ class MailMessagingService {
 		return 'Message sending error' 
 	}
 	
-	String forwardMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file) {
+	String forwardMessage(User from, String[] contacts, String[] circles, String messageId, String text, String subject, MultipartFile file) {
 		
 		def msg = validateMessage(subject, text, file)
 		if (msg.empty) {
@@ -96,7 +96,8 @@ class MailMessagingService {
 			
 			for (toId in toIds) {
 				def toUser = User.findById(toId)
-				threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, text, subject, file)
+				def forwardMsg = threadMessageService.findAllMessagesOnThread(Message.findById(messageId))
+				threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, text, subject, file, forwardMsg)
 			}
 				
 			return 'Message sent successfully'
