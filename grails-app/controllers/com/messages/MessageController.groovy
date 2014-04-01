@@ -81,8 +81,9 @@ class MessageController {
 			((message.fromId == currentUser.id) || (message.toId == currentUser.id))) {
 				def result = mailMessagingService.getAllThreadMessages(currentUser.id, message)
 				
-				render view:'thread', model:[user:currentUser, messages:result.messages, subject:message.subject, 
-											otherUser:result.otherUser, contactList: result.contactList, circleList: result.circleList]
+				render view:'thread', model:[user:currentUser, messages:result.messages, subject:result.subject, 
+											otherUser:result.otherUser, contactList: result.contactList, circleList: result.circleList,
+											lastMessageId: result.lastMessageId]
 		} else {
 			redirect mapping: 'inbox'
 		}

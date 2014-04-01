@@ -22,6 +22,7 @@ class MailMessagingService {
 	}
 	
 	Map getAllThreadMessages(Long currUserId, Message message) {
+		def messageIds = []
 		def messages = threadMessageService.findAllMessagesOnThread(message)
 		
 		//Mark as read
@@ -30,10 +31,12 @@ class MailMessagingService {
 				it.readed = true
 				it.save()
 			}
+			messageIds += messages.id
 		}
 		
 		// Set the forward content message
-		setForwardContent(messages)
+		messageIds = getForwardMessageIds(messages, messageIds)
+		messages = Message.findAllByIdInList(messageIds, [sort:'dateCreated', order: 'asc'])
 
 		def otherUser = message.fromId == currUserId?User.get(message.toId):User.get(message.fromId)
 		def addressBook = AddressBook.findByUserId(currUserId)
@@ -41,6 +44,8 @@ class MailMessagingService {
 		def circleList = AddressCircle.findAllByIdInList(addressBook.circleIds)
 		
 		def result = [:]
+		result.subject = messages[messages.size()-1].subject
+		result.lastMessageId = messages[messages.size()-1].id
 		result.messages = messages
 		result.otherUser = otherUser
 		result.contactList = contactList
@@ -49,16 +54,17 @@ class MailMessagingService {
 		return result
 	}
 	
-	void setForwardContent(List messages) {
+	List getForwardMessageIds(List messages, List messageIds) {
 		if (messages) {
 			for (msg in messages) {
 				if (msg.forwardMessage) {
-					msg['forwardContent'] = findForwardMessages(msg.forwardMessage)//Message.findAllByIdInList(msg.forwardMessage, [sort: "dateCreated", order: "desc"])
-					println msg['forwardContent']
-					setForwardContent(msg['forwardContent'])
+					messageIds += getForwardMessageIds(Message.findAllByIdInList(msg.forwardMessage), messageIds)
 				}
+				messageIds += msg.id
 			}
 		}
+		
+		return messageIds
 	}
 	
 	List<Message> findForwardMessages(List messageIds, String orderby='desc'){

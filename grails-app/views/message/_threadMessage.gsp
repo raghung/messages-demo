@@ -1,11 +1,8 @@
 <%@ page import="com.messages.User" %>
 <g:each in="${messages}" var="entry">
-	<g:if test="${entry.forwardContent}">
+	<%--<g:if test="${entry.forwardContent}">
 		<g:render template="threadMessage" model="[messages: entry.forwardContent]"/>
-	</g:if>
-	
-	<div><hr></div>
-	
+	</g:if>--%>
 	<div>${User.get(entry.fromId).firstname} to ${User.get(entry.toId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${entry.dateCreated}"/></div>
   	
   	<div><b><i>${entry.text}</i></b></div>
@@ -14,4 +11,5 @@
 		${entry.fileName}
 		<g:link action="download" id="${entry.id}">Download</g:link>
 	</g:if>
+	<div><hr></div>
 </g:each>

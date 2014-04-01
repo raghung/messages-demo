@@ -21,7 +21,7 @@
 	            <p>&nbsp; <g:checkBox name="circles" value="${circle.id}" checked="false"/> Circle(${circle.circlename})</p>
             </g:each>
         </div>
-        <div><b>Sub: <i>${messages[0].subject}</i></b><input type="hidden" name="messageId" value="${messages[0].id}"></div>
+        <div><b>Sub: <i>${subject}</i></b><input type="hidden" name="messageId" value="${lastMessageId}"></div>
         <div><hr></div>
         
         <div id="thread-message">
@@ -29,7 +29,7 @@
         </div><!-- End of Thread message -->
        	
        	<div>	
-       		<input id="subject" type="hidden" name="subject" value="${messages[0].subject}" />
+       		<input id="subject" type="hidden" name="subject" value="${subject}" />
             <input type="hidden" name="toId" value="${otherUser.id}" />
        		<textarea id="text" name="text" style="width:700px"></textarea>
        	</div>	
