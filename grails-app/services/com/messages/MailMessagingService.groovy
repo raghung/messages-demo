@@ -20,6 +20,54 @@ class MailMessagingService {
 		
 		return result
 	}
+	
+	Map getAllThreadMessages(Long currUserId, Message message) {
+		def messages = threadMessageService.findAllMessagesOnThread(message)
+		
+		//Mark as read
+		messages.each {
+			if (it.toId == currUserId) {
+				it.readed = true
+				it.save()
+			}
+		}
+		
+		// Set the forward content message
+		setForwardContent(messages)
+
+		def otherUser = message.fromId == currUserId?User.get(message.toId):User.get(message.fromId)
+		def addressBook = AddressBook.findByUserId(currUserId)
+		def contactList = User.findAllByIdInList(addressBook.contactIds - otherUser.id.toString())
+		def circleList = AddressCircle.findAllByIdInList(addressBook.circleIds)
+		
+		def result = [:]
+		result.messages = messages
+		result.otherUser = otherUser
+		result.contactList = contactList
+		result.circleList = circleList
+		
+		return result
+	}
+	
+	void setForwardContent(List messages) {
+		if (messages) {
+			for (msg in messages) {
+				if (msg.forwardMessage) {
+					msg['forwardContent'] = findForwardMessages(msg.forwardMessage)//Message.findAllByIdInList(msg.forwardMessage, [sort: "dateCreated", order: "desc"])
+					println msg['forwardContent']
+					setForwardContent(msg['forwardContent'])
+				}
+			}
+		}
+	}
+	
+	List<Message> findForwardMessages(List messageIds, String orderby='desc'){
+		return Message.createCriteria().list{
+			'in' ('id', messageIds)
+			order 'dateCreated', orderby
+		}
+		
+	}
 		
 	String sendMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file) {
 		

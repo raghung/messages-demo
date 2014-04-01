@@ -79,22 +79,10 @@ class MessageController {
 		//If the message exists and the user can view the message
 		if ((message) &&
 			((message.fromId == currentUser.id) || (message.toId == currentUser.id))) {
-				def messages = threadMessageService.findAllMessagesOnThread(message)
-
-				//Mark as readed
-				messages.each {
-					if (it.toId == currentUser.id) {
-						it.readed = true
-						it.save()
-					}
-				}
-
-				def otherUser = message.fromId == currentUser.id?User.get(message.toId):User.get(message.fromId)
-				def addressBook = AddressBook.findByUserId(currentUser.id)
-				def contactList = User.findAllByIdInList(addressBook.contactIds - otherUser.id.toString())
-				def circleList = AddressCircle.findAllByIdInList(addressBook.circleIds)
+				def result = mailMessagingService.getAllThreadMessages(currentUser.id, message)
 				
-				render view:'thread', model:[user:currentUser, messages:messages, subject:message.subject, otherUser:otherUser, contactList: contactList, circleList: circleList]
+				render view:'thread', model:[user:currentUser, messages:result.messages, subject:message.subject, 
+											otherUser:result.otherUser, contactList: result.contactList, circleList: result.circleList]
 		} else {
 			redirect mapping: 'inbox'
 		}

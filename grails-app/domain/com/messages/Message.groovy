@@ -139,7 +139,7 @@ class Message {
 	  */
 	 //Long sentById
 	 
-	 static embedded = ['forwardMessage']
+	 //static embedded = ['forwardMessage']
 	 
     static constraints = {
         subject nullable: true, blank: true
@@ -166,6 +166,8 @@ class Message {
         return ((this.fromId == idUser && this.fromDeletedOnThread) || (this.toId == idUser && this.toDeletedOnThread))
     }
 
-
+	String toString() {
+		return "${fromName} to ${toName} at ${dateCreated}"
+	}
 
 }

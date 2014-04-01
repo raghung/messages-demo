@@ -59,8 +59,11 @@ class ThreadMessageService {
 			}
 			// Forward Msg
 			if (forwardMsg) {
+				if (m.forwardMessage == null) {
+					m.forwardMessage = []
+				}
 				for (msg in forwardMsg) {
-					m.forwardMessage += msg
+					m.forwardMessage += msg.id
 				}
 				m.subject = "Fwd:" + m.subject
 			}

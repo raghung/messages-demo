@@ -23,36 +23,14 @@
         </div>
         <div><b>Sub: <i>${messages[0].subject}</i></b><input type="hidden" name="messageId" value="${messages[0].id}"></div>
         <div><hr></div>
-        <div>
-        	<g:each in="${messages}" status="i" var="entry">
-        		<div>${User.get(entry.fromId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${entry.dateCreated}"/></div>
-        		<div><b><i>${entry.text}</i></b></div>
-        		<g:if test="${entry.fileName}">
-  					<img style="width: 12.0em;" src="${createLink(controller:'message', action:'showImage', id: entry.ident())}" />
-  					${entry.fileName}
-					<g:link action="download" id="${entry.id}">Download</g:link>
-				</g:if>
-        		<div><hr></div>
-        		<g:if test="${entry.forwardMessage}">
-        		<div>-- Forward Message --</div>
-        		<g:each in="${entry.forwardMessage}" var="forward">
-        			<g:if test="${forward}">
-        			<div>${User.get(forward.fromId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${forward.dateCreated}"/></div>
-        			<div><b><i>${forward.text}</i></b></div>
-        			<g:if test="${forward.fileName}">
-  						<img style="width: 12.0em;" src="${createLink(controller:'message', action:'showImage', id: forward.ident())}" />
-  						${forward.fileName}
-					<g:link action="download" id="${forward.id}">Download</g:link>
-					</g:if>
-        			<div><hr></div>
-        			</g:if>
-        		</g:each>
-        		</g:if>
-        	</g:each>
-        </div>
+        
+        <div id="thread-message">
+        	<g:render template="threadMessage" model="[messages: messages]"/>
+        </div><!-- End of Thread message -->
+       	
        	<div>	
        		<input id="subject" type="hidden" name="subject" value="${messages[0].subject}" />
-               <input type="hidden" name="toId" value="${otherUser.id}" />
+            <input type="hidden" name="toId" value="${otherUser.id}" />
        		<textarea id="text" name="text" style="width:700px"></textarea>
        	</div>	
 	    <label for="photo">Attachments: </label>
