@@ -22,10 +22,11 @@ class ThreadMessageService {
      * @param text The text of the message
      * @param subject The subject of the message
      * @param Attached multipart file
-     * @param forwardMsg Forwarding message 
+     * @param forwardMsg Forwarding message
+     * @param grpUserIds Users in the group chat 
      * @return a Message
      */
-    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, String text, String subject, MultipartFile file, List forwardMsg = []) {
+    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, String text, String subject, MultipartFile file, List forwardMsg = [], List grpUserIds = []) {
         def reply = false
         def s = subject?.trim()
 
@@ -65,7 +66,15 @@ class ThreadMessageService {
 				for (msg in forwardMsg) {
 					m.forwardMessage += msg.id
 				}
-				m.subject = "Fwd:" + m.subject
+				m.subject = "Fwd: " + m.subject
+			}
+			// Group Msg
+			if (grpUserIds) {
+				m.isGroupMessage = true
+				for (userId in grpUserIds) {
+					m.groupMessageUser += userId
+				}
+				m.subject = "Grp: " + m.subject
 			}
             if (m.save()){
                 messagesOnThread.each{
@@ -157,6 +166,19 @@ class ThreadMessageService {
          }
 		 
      }
+	 
+	 /**
+	  * Find all the group messages on this thread (between those group users with the same subject)
+	  * @param message any of the messages on the thread
+	  * @return a list of Messages
+	  */
+	  List<Message> findAllGroupMessagesOnThread(Message message, String orderby='asc'){
+		  return Message.createCriteria().list{
+			  eq 'subject', message.subject
+			  order 'dateCreated', orderby
+		  }
+		  
+	  }
 
      /**
       * Delete messages on a thread from the point of view of an user.
@@ -212,7 +234,7 @@ class ThreadMessageService {
                         eq 'toId', id
                         eq 'toDeletedOnThread', false
                     }
-                }
+                }	
             }
         } else if (received) {
             messages = Message.findAllByToIdAndToDeletedOnThread(id, false)
@@ -224,11 +246,15 @@ class ThreadMessageService {
             def message = messages[0]
             def subjectGroup
             if (received && sent) {
-                subjectGroup = messages.findAll{
-                    it.subject == message.subject &&
-                    ((it.fromId == message.fromId && it.toId == message.toId) ||
-                    (it.fromId == message.toId && it.toId == message.fromId))
-                }.sort{it.dateCreated}
+				//if (message.isGroupMessage) {
+					subjectGroup = messages.findAll{it.subject == message.subject}.sort{it.dateCreated}
+				/*} else {
+	                subjectGroup = messages.findAll{
+	                    it.subject == message.subject &&
+	                    ((it.fromId == message.fromId && it.toId == message.toId) ||
+	                    (it.fromId == message.toId && it.toId == message.fromId))
+	                }.sort{it.dateCreated}
+				}*/
             } else if (received) {
                 subjectGroup = messages.findAll{it.fromId == message.fromId && it.subject == message.subject}.sort{it.dateCreated}
             } else {

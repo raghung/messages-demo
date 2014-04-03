@@ -128,6 +128,10 @@ class Message {
 	  * Map containing forwarded messages 
 	  */
 	 List forwardMessage = []
+	 
+	 Boolean isGroupMessage = false
+	 
+	 List groupMessageUser = []
 	  
 	 /**
 	  * Id of the user that message is assigned(Staff to Physician or Vice versa)

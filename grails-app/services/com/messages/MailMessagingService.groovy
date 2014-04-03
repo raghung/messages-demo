@@ -12,11 +12,17 @@ class MailMessagingService {
 	Map getAllMessages(userId, offset, itemsByPage, sort, order) {
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
 
-		// Set the other user who is in conversation with current user		
+		// Set the other user who is in conversation with current user
 		for (message in result.messages) {
 			def otherUser = message.fromId == userId? User.get(message.toId) : User.get(message.fromId)
-			message.otherName = otherUser.firstname + ' ' + otherUser.lastname
+			
+			if (message.isGroupMessage) {
+				message.otherName = "Group("+ otherUser.firstname + ' ' + otherUser.lastname +")" 
+			} else {
+				message.otherName = otherUser.firstname + ' ' + otherUser.lastname
+			}
 		}
+		result.messages = result.messages.sort{it.dateCreated}.reverse()
 		
 		return result
 	}
@@ -42,6 +48,10 @@ class MailMessagingService {
 		def addressBook = AddressBook.findByUserId(currUserId)
 		def contactList = User.findAllByIdInList(addressBook.contactIds - otherUser.id.toString())
 		def circleList = AddressCircle.findAllByIdInList(addressBook.circleIds)
+		def groupList
+		if (message.isGroupMessage) {
+			groupList = User.findAllByIdInList(message.groupMessageUser - currUserId.toString())
+		} 
 		
 		def result = [:]
 		result.subject = messages[messages.size()-1].subject
@@ -50,6 +60,7 @@ class MailMessagingService {
 		result.otherUser = otherUser
 		result.contactList = contactList
 		result.circleList = circleList
+		result.groupList = groupList
 		
 		return result
 	}
@@ -67,97 +78,80 @@ class MailMessagingService {
 		return messageIds
 	}
 	
-	List<Message> findForwardMessages(List messageIds, String orderby='desc'){
+	/*List<Message> findForwardMessages(List messageIds, String orderby='desc'){
 		return Message.createCriteria().list{
 			'in' ('id', messageIds)
 			order 'dateCreated', orderby
 		}
 		
-	}
+	}*/
 		
-	String sendMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file) {
-		
-		def msg = validateMessage(subject, text, file)
-		if (msg.empty) {
-			
-			def toIds = []
-			for (contactId in contacts) {
-				toIds += contactId
-			}
-			
-			for (circleId in circles) {
-				def addressCircle = AddressCircle.findById(circleId)
-				if (addressCircle) {
-					for (contactId in addressCircle.contactIds) {
-						toIds += contactId
-					}
-					
-					// other circles ids
-					for (otherCircleId in addressCircle.otherCircleIds) {
-						def otherCircle = AddressCircle.findById(otherCircleId)
-						if (otherCircle) {
-							for (contactId in otherCircle.contactIds) {
-								toIds += contactId
-							}
-						}
-					}
-				}
-			}
-			
-			toIds = toIds.unique()
-			
-			for (toId in toIds) {
-				def toUser = User.findById(toId)
-				threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, text, subject, file)
-			} 
-				
+	String sendMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file, boolean isGroupChat=false) {
+
+		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat)) {
 			return 'Message sent successfully'
 		}
-
-		return 'Message sending error' 
+		
+		return 'Message sending error'
 	}
 	
-	String forwardMessage(User from, String[] contacts, String[] circles, String messageId, String text, String subject, MultipartFile file) {
+	String forwardMessage(User from, String[] contacts, String[] circles, String messageId, String text, String subject, MultipartFile file, boolean isGroupChat=false) {
 		
-		def msg = validateMessage(subject, text, file)
-		if (msg.empty) {
-			
-			def toIds = []
-			for (contactId in contacts) {
-				toIds += contactId
-			}
-			
-			for (circleId in circles) {
-				def addressCircle = AddressCircle.findById(circleId)
-				if (addressCircle) {
-					for (contactId in addressCircle.contactIds) {
-						toIds += contactId
-					}
-					
-					// other circles ids
-					for (otherCircleId in addressCircle.otherCircleIds) {
-						def otherCircle = AddressCircle.findById(otherCircleId)
-						if (otherCircle) {
-							for (contactId in otherCircle.contactIds) {
-								toIds += contactId
-							}
-						}
-					}
-				}
-			}
-			
-			toIds = toIds.unique()
-			
-			for (toId in toIds) {
-				def toUser = User.findById(toId)
-				def forwardMsg = threadMessageService.findAllMessagesOnThread(Message.findById(messageId))
-				threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, text, subject, file, forwardMsg)
-			}
-				
+		def forwardMsg = threadMessageService.findAllMessagesOnThread(Message.findById(messageId))
+
+		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, forwardMsg)) {
 			return 'Message sent successfully'
 		}
 
 		return 'Message sending error'
+	}
+	
+	Message sendThreadMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file, boolean isGroupChat=false, List forwardMsg = []) {
+		def message = null
+		def msg = validateMessage(subject, text, file)
+		if (msg.empty) {
+			
+			def toIds = []
+			for (contactId in contacts) {
+				toIds += contactId
+			}
+			
+			for (circleId in circles) {
+				def addressCircle = AddressCircle.findById(circleId)
+				if (addressCircle) {
+					for (contactId in addressCircle.contactIds) {
+						toIds += contactId
+					}
+					
+					// other circles ids
+					for (otherCircleId in addressCircle.otherCircleIds) {
+						def otherCircle = AddressCircle.findById(otherCircleId)
+						if (otherCircle) {
+							for (contactId in otherCircle.contactIds) {
+								toIds += contactId
+							}
+						}
+					}
+				}
+			}
+			
+			toIds = toIds.unique()
+			
+			def grpUserIds = []
+			if (isGroupChat) {
+				for (toId in toIds) {
+					grpUserIds += toId
+				}
+				grpUserIds += from.id.toString()
+			}
+			
+			for (toId in toIds) {
+				def toUser = User.findById(toId)
+				message = threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, text, subject, file, forwardMsg, grpUserIds)
+			}
+		}
+		
+		return message
 	}
 	
 	List getUsersList(currUser) {

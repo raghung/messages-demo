@@ -8,7 +8,17 @@
 	<body>
 		&nbsp;<g:link mapping="inbox">Inbox</g:link> &gt; Messages
 		<div><hr></div>
-        <div><h2>Conversation with ${otherUser.firstname} ${otherUser.lastname}</h2></div>
+		<g:if test="${groupList}">
+        	<div><h2>Group Conversation (
+        	<g:each in="${groupList}" var="gpUser">
+        		|${gpUser.firstname} ${gpUser.lastname}|
+        	</g:each>
+        	)
+        	</h2></div>
+        </g:if>
+        <g:else>
+        	<div><h2>Conversation with ${otherUser.firstname} ${otherUser.lastname}</h2></div>
+        </g:else>
         <div><input type="button" value="Forward >>" onclick="openForward()"></div>
         
         <g:uploadForm controller="message" action="saveThreadMessage">
@@ -25,7 +35,7 @@
         <div><hr></div>
         
         <div id="thread-message">
-        	<g:render template="threadMessage" model="[messages: messages]"/>
+        	<g:render template="threadMessage" model="[messages: messages, groupList: groupList]"/>
         </div><!-- End of Thread message -->
        	
        	<div>	

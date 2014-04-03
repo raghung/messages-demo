@@ -3,7 +3,12 @@
 	<%--<g:if test="${entry.forwardContent}">
 		<g:render template="threadMessage" model="[messages: entry.forwardContent]"/>
 	</g:if>--%>
-	<div>${User.get(entry.fromId).firstname} to ${User.get(entry.toId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${entry.dateCreated}"/></div>
+	<g:if test="${groupList}">
+		<div>${User.get(entry.fromId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${entry.dateCreated}"/></div>
+	</g:if>
+	<g:else>
+		<div>${User.get(entry.fromId).firstname} to ${User.get(entry.toId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${entry.dateCreated}"/></div>
+	</g:else>
   	
   	<div><b><i>${entry.text}</i></b></div>
   	<g:if test="${entry.fileName}">

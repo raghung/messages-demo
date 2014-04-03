@@ -83,7 +83,7 @@ class MessageController {
 				
 				render view:'thread', model:[user:currentUser, messages:result.messages, subject:result.subject, 
 											otherUser:result.otherUser, contactList: result.contactList, circleList: result.circleList,
-											lastMessageId: result.lastMessageId]
+											lastMessageId: result.lastMessageId, groupList: result.groupList]
 		} else {
 			redirect mapping: 'inbox'
 		}
@@ -108,12 +108,13 @@ class MessageController {
         def currentUser = springSecurityService.currentUser
         //def toUser = User.get(params.toId)
 		def file = request.getFile("file")
+		def isGroupChat = params.groupChat? true:false
 
-        if (params.contacts || params.circles) {
+        if (params.contacts || params.circles) { // Normal or Group Message
 			def contacts = addressBookService.getArray(params.contacts)
 			def circles = addressBookService.getArray(params.circles)
 			
-			flash.message = mailMessagingService.sendMessage(currentUser, contacts, circles, params.text, params.subject, file)//message(code: 'thread.success')
+			flash.message = mailMessagingService.sendMessage(currentUser, contacts, circles, params.text, params.subject, file, isGroupChat)//message(code: 'thread.success')
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
         }
@@ -125,17 +126,19 @@ class MessageController {
 		def toUser = User.get(params.toId)
 		def file = request.getFile("file")
 
-		if (params.contacts || params.circles) { // Forward Message
+		if (params.contacts || params.circles) { // Forward or Group Message
 			def contacts = addressBookService.getArray(params.contacts)
 			def circles = addressBookService.getArray(params.circles)
-			flash.message = mailMessagingService.forwardMessage(currentUser, contacts, circles, params.messageId, params.text, params.subject, file)//message(code: 'thread.success')
+			def isGroupChat = params.groupChat? true:false
+			
+			flash.message = mailMessagingService.forwardMessage(currentUser, contacts, circles, params.messageId, params.text, params.subject, file, isGroupChat)
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
 			
 		} else if (params.toId) { // Normal reply
 			
 			def contacts = addressBookService.getArray(params.toId)
-			flash.message = mailMessagingService.sendMessage(currentUser, contacts, null, params.text, params.subject, file)//message(code: 'thread.success')
+			flash.message = mailMessagingService.sendMessage(currentUser, contacts, null, params.text, params.subject, file)
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
 		}
