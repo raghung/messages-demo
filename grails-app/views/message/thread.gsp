@@ -19,11 +19,14 @@
         <g:else>
         	<div><h2>Conversation with ${otherUser.firstname} ${otherUser.lastname}</h2></div>
         </g:else>
-        <div><input type="button" value="Forward >>" onclick="openForward()"></div>
+        <div><input type="button" value="Forward/Group Users >>" onclick="openForward()"></div>
         
         <g:uploadForm controller="message" action="saveThreadMessage">
         
         <div id="divForward" style="display:none">
+        	<g:each in="${groupList}" var="grpUser">
+        		<p>&nbsp; <g:checkBox name="contacts" value="${grpUser.id}" /> ${grpUser.firstname} ${grpUser.lastname}</p>
+        	</g:each>
         	<g:each in="${contactList}" var="user">
 	            <p>&nbsp; <g:checkBox name="contacts" value="${user.id}" checked="false"/> ${user.firstname} ${user.lastname}</p>
 	        </g:each>
@@ -31,9 +34,14 @@
 	            <p>&nbsp; <g:checkBox name="circles" value="${circle.id}" checked="false"/> Circle(${circle.circlename})</p>
             </g:each>
         </div>
+		<div><hr></div>
+		
+		<div>&nbsp;<g:checkBox name="groupChat" value="${groupList}"/> Group Chat</div>
+		
+		<div><hr></div>
         <div><b>Sub: <i>${subject}</i></b><input type="hidden" name="messageId" value="${lastMessageId}"></div>
         <div><hr></div>
-        
+
         <div id="thread-message">
         	<g:render template="threadMessage" model="[messages: messages, groupList: groupList]"/>
         </div><!-- End of Thread message -->

@@ -127,9 +127,15 @@ class MessageController {
 		def file = request.getFile("file")
 
 		if (params.contacts || params.circles) { // Forward or Group Message
+			def isGroupChat = params.groupChat? true:false
+			
+			// New Group Chat
+			if (isGroupChat && params.toId) {
+				params.contacts += params.toId
+			}
 			def contacts = addressBookService.getArray(params.contacts)
 			def circles = addressBookService.getArray(params.circles)
-			def isGroupChat = params.groupChat? true:false
+			
 			
 			flash.message = mailMessagingService.forwardMessage(currentUser, contacts, circles, params.messageId, params.text, params.subject, file, isGroupChat)
 			elasticSearchService.index(class:Message)

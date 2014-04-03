@@ -9,6 +9,8 @@ class MailMessagingService {
 	def threadMessageService
 	def grailsApplication
 	
+	final int MAX_INBOX_TEXT = 30
+	
 	Map getAllMessages(userId, offset, itemsByPage, sort, order) {
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
 
@@ -20,6 +22,10 @@ class MailMessagingService {
 				message.otherName = "Group("+ otherUser.firstname + ' ' + otherUser.lastname +")" 
 			} else {
 				message.otherName = otherUser.firstname + ' ' + otherUser.lastname
+			}
+			
+			if (message.text.length() > MAX_INBOX_TEXT) {
+				message.text = message.text.substring(0, MAX_INBOX_TEXT) + ".."
 			}
 		}
 		result.messages = result.messages.sort{it.dateCreated}.reverse()
@@ -95,9 +101,13 @@ class MailMessagingService {
 		return 'Message sending error'
 	}
 	
-	String forwardMessage(User from, String[] contacts, String[] circles, String messageId, String text, String subject, MultipartFile file, boolean isGroupChat=false) {
+	String forwardMessage(User from, String[] contacts, String[] circles, String lastMsgId, String text, String subject, MultipartFile file, boolean isGroupChat=false) {
 		
-		def forwardMsg = threadMessageService.findAllMessagesOnThread(Message.findById(messageId))
+		def lastMessage = Message.findById(lastMsgId)
+		def forwardMsg = threadMessageService.findAllMessagesOnThread(lastMessage)
+		if (!isGroupChat) {
+			text = text + "\n-- Forward Message --"
+		}
 
 		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, forwardMsg)) {
 			return 'Message sent successfully'

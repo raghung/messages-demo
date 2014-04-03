@@ -58,6 +58,16 @@ class ThreadMessageService {
 				}
 				 
 			}
+			// Group Msg and communication is between more than 2 people
+			if (grpUserIds && grpUserIds.size() > 2) {
+				m.isGroupMessage = true
+				for (userId in grpUserIds) {
+					m.groupMessageUser += userId
+				}
+				if (m.subject.indexOf("Grp") != 0) { // New Group message
+					m.subject = "Grp: " + m.subject
+				}
+			}
 			// Forward Msg
 			if (forwardMsg) {
 				if (m.forwardMessage == null) {
@@ -66,16 +76,11 @@ class ThreadMessageService {
 				for (msg in forwardMsg) {
 					m.forwardMessage += msg.id
 				}
-				m.subject = "Fwd: " + m.subject
-			}
-			// Group Msg
-			if (grpUserIds) {
-				m.isGroupMessage = true
-				for (userId in grpUserIds) {
-					m.groupMessageUser += userId
+				if (!m.isGroupMessage) {
+					m.subject = "Fwd: " + m.subject
 				}
-				m.subject = "Grp: " + m.subject
 			}
+			
             if (m.save()){
                 messagesOnThread.each{
                      it.numberOfMessagesOnThread = messagesOnThread.size() +1
@@ -246,15 +251,15 @@ class ThreadMessageService {
             def message = messages[0]
             def subjectGroup
             if (received && sent) {
-				//if (message.isGroupMessage) {
+				if (message.isGroupMessage) {
 					subjectGroup = messages.findAll{it.subject == message.subject}.sort{it.dateCreated}
-				/*} else {
+				} else {
 	                subjectGroup = messages.findAll{
 	                    it.subject == message.subject &&
 	                    ((it.fromId == message.fromId && it.toId == message.toId) ||
 	                    (it.fromId == message.toId && it.toId == message.fromId))
 	                }.sort{it.dateCreated}
-				}*/
+				}
             } else if (received) {
                 subjectGroup = messages.findAll{it.fromId == message.fromId && it.subject == message.subject}.sort{it.dateCreated}
             } else {
