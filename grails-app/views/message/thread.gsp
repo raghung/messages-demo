@@ -43,7 +43,7 @@
         <div><hr></div>
 
         <div id="thread-message">
-        	<g:render template="threadMessage" model="[messages: messages, groupList: groupList]"/>
+        	<g:render template="threadMessage" model="[messages: messages]"/>
         </div><!-- End of Thread message -->
        	
        	<div>	

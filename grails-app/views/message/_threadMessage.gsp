@@ -3,7 +3,7 @@
 	<%--<g:if test="${entry.forwardContent}">
 		<g:render template="threadMessage" model="[messages: entry.forwardContent]"/>
 	</g:if>--%>
-	<g:if test="${groupList}">
+	<g:if test="${entry.isGroupMessage}">
 		<div>${User.get(entry.fromId).firstname} at <g:formatDate format="yyyy-MM-dd HH:mm" date="${entry.dateCreated}"/></div>
 	</g:if>
 	<g:else>

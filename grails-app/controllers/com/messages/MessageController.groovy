@@ -5,12 +5,13 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import grails.plugin.springsecurity.annotation.Secured;
 
-@Secured(['ROLE_USER'])
+@Secured(['ROLE_USER', 'ROLE_DOCTOR', 'ROLE_STAFF'])
 class MessageController {
-	def threadMessageService
+
+	transient springSecurityService
+	
 	def mailMessagingService
 	def addressBookService
-	def springSecurityService
 	def elasticSearchService
 	def elasticSearchAdminService
 	

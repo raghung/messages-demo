@@ -22,7 +22,8 @@
                 <div>Sub: <select name="selectSub">
                 			<option value="1">Refer Patient</option>
                 			<option value="2">Custom</option>
-                			</select>&nbsp;<input id="subject" class="subject" type="text" name="subject"/></div>
+                			<option value="3">Instant Messaging</option>
+                		  </select>&nbsp;<input id="subject" class="subject" type="text" name="subject"/></div>
                 <br />
                 <div>&nbsp;<g:checkBox name="groupChat" value="1" checked="false"/> Group Chat</div>
                 <div><textarea id="text" style="width:700px" name="text" maxlength="5000""></textarea></div>

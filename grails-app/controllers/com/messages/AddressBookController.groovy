@@ -4,9 +4,9 @@ import com.sun.org.apache.xpath.internal.operations.String;
 
 import grails.plugin.springsecurity.annotation.Secured;
 
-@Secured(['ROLE_USER'])
+@Secured(['ROLE_USER', 'ROLE_DOCTOR', 'ROLE_STAFF'])
 class AddressBookController {
-	def springSecurityService
+	transient springSecurityService
 	def addressBookService
 	
 	def book() {

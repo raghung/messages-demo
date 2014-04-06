@@ -17,7 +17,7 @@ class User {
 	boolean accountExpired
 	boolean accountLocked
 	boolean passwordExpired
-
+	
 	static transients = ['springSecurityService']
 
 	static constraints = {
@@ -36,6 +36,31 @@ class User {
 
 	Set<Role> getAuthorities() {
 		UserRole.findAllByUser(this).collect { it.role } as Set
+	}
+	
+	BasicInfo getBasicInfo() {
+		BasicInfo.findByUserId(this.id)
+	}
+	
+	Set<User> getPhysicians() {
+		def basicInfo = getBasicInfo()
+		if (basicInfo.physicianIds)
+			return User.findAllByIdInList(getBasicInfo.physicianIds) as Set
+		return null
+	}
+	
+	Set<User> getPatients() {
+		def basicInfo = getBasicInfo()
+		if (basicInfo.patientIds)
+			return User.findAllByIdInList(getBasicInfo.patientIds) as Set
+		return null
+	}
+	
+	Set<User> getProfessionals() {
+		def basicInfo = getBasicInfo()
+		if (basicInfo.professionalIds)
+			return User.findAllByIdInList(getBasicInfo.professionalIds) as Set
+		return null
 	}
 
 	def beforeInsert() {
