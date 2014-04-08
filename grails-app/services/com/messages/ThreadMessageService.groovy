@@ -22,11 +22,12 @@ class ThreadMessageService {
      * @param text The text of the message
      * @param subject The subject of the message
      * @param Attached multipart file
+     * @param messageType Type of message like custom, refer patient, follow up, practice group etc
      * @param forwardMsg Forwarding message
      * @param grpUserIds Users in the group chat 
      * @return a Message
      */
-    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, String text, String subject, MultipartFile file, List forwardMsg = [], List grpUserIds = []) {
+    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, String text, String subject, MultipartFile file, String messageType, List forwardMsg = [], List grpUserIds = []) {
         def reply = false
         def s = subject?.trim()
 
@@ -79,6 +80,12 @@ class ThreadMessageService {
 				if (!m.isGroupMessage) {
 					m.subject = "Fwd: " + m.subject
 				}
+			}
+			// Set message Type
+			if (messageType) {
+				m.messageType = messageType
+			} else {
+				m.messageType("custom")
 			}
 			
             if (m.save()){
@@ -282,7 +289,7 @@ class ThreadMessageService {
      * @param offset Number of messages to skip (for pagination)
      * @param itemsByPage Number of messages to return (for pagination). -1 will return all messages.
      * @param sort Field to order by. Can be one of 'fromId', 'toId', 'subject' or 'dateCreated'
-     * @param order 'asc' or 'desc' for ascendig or descending order.
+     * @param order 'asc' or 'desc' for ascending or descending order.
      * @return a list of Messages
      **/
     List<Message> messagesSortAndPagination(List<Message> messages, int offset = 0, int itemsByPage = -1, String sort='dateCreated', String order='asc'){

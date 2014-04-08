@@ -11,7 +11,21 @@ class MailMessagingService {
 	
 	final int MAX_INBOX_TEXT = 30
 	
-	Map getAllMessages(userId, offset, itemsByPage, sort, order) {
+	Map getAllMessages(Long userId, int offset, Integer itemsByPage, String sort, String order) {
+		def doctorRole = Role.findByAuthority("ROLE_DOCTOR")
+		def patientRole = Role.findByAuthority("ROLE_USER")
+		def staffRole = Role.findByAuthority("ROLE_STAFF")
+
+		/*def currUser = User.get(userId)
+		def basicInfo = currUser.getBasicInfo()
+		def physicianIds = basicInfo? basicInfo.physicianIds : []
+		def patientIds = basicInfo? basicInfo.patientIds : []*/
+
+		def physicianMsgs = []
+		def practiceGrpMsgs = []
+		def followupMsgs = []
+		def patientMsgs = []
+		
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
 
 		// Set the other user who is in conversation with current user
@@ -27,8 +41,27 @@ class MailMessagingService {
 			if (message.text.length() > MAX_INBOX_TEXT) {
 				message.text = message.text.substring(0, MAX_INBOX_TEXT) + ".."
 			}
+			
+			// Physician message -- use physicianIds.contains(otherUser.id.toString()) when needed
+			if (otherUser.getAuthorities().contains(doctorRole)) {
+				if (message.messageType == "practice-group") {
+					practiceGrpMsgs += message	
+				} else {
+					physicianMsgs += message
+				}
+			} else if (otherUser.getAuthorities().contains(patientRole)) { // Patients Message
+				if (message.messageType == "follow-up") {
+					followupMsgs += message
+				} else {	
+					patientMsgs += message
+				}
+			}				
 		}
-		result.messages = result.messages.sort{it.dateCreated}.reverse()
+		//result.messages = result.messages.sort{it.dateCreated}.reverse()
+		result.physicianMsgs = physicianMsgs.sort{it.dateCreated}.reverse()
+		result.practiceGrpMsgs = practiceGrpMsgs.sort{it.dateCreated}.reverse()
+		result.patientMsgs = patientMsgs.sort{it.dateCreated}.reverse()
+		result.followupMsgs = followupMsgs.sort{it.dateCreated}.reverse()
 		
 		return result
 	}
@@ -92,9 +125,9 @@ class MailMessagingService {
 		
 	}*/
 		
-	String sendMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file, boolean isGroupChat=false) {
+	String sendMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file, String messageType, boolean isGroupChat=false) {
 
-		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat)) {
+		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, messageType)) {
 			return 'Message sent successfully'
 		}
 		
@@ -109,14 +142,15 @@ class MailMessagingService {
 			text = text + "\n-- Forward Message --"
 		}
 
-		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, forwardMsg)) {
+		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, lastMessage.messageType, forwardMsg)) {
 			return 'Message sent successfully'
 		}
 
 		return 'Message sending error'
 	}
 	
-	Message sendThreadMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file, boolean isGroupChat=false, List forwardMsg = []) {
+	Message sendThreadMessage(User from, String[] contacts, String[] circles, String text, String subject, 
+								MultipartFile file, boolean isGroupChat=false, String messageType, List forwardMsg = []) {
 		def message = null
 		def msg = validateMessage(subject, text, file)
 		if (msg.empty) {
@@ -157,7 +191,8 @@ class MailMessagingService {
 			
 			for (toId in toIds) {
 				def toUser = User.findById(toId)
-				message = threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, text, subject, file, forwardMsg, grpUserIds)
+				message = threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, 
+																	text, subject, file, messageType, forwardMsg, grpUserIds)
 			}
 		}
 		

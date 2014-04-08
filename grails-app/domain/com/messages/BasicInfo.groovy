@@ -7,9 +7,9 @@ class BasicInfo {
 	String id
 	Long userId
     
-	List physicianIds
-	List patientIds
-	List professionalIds 
+	List physicianIds = []
+	List patientIds = []
+	List professionalIds = []
 	
 	static constraints = {
 		userId unique: true, blank: false

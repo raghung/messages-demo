@@ -129,9 +129,20 @@ class Message {
 	  */
 	 List forwardMessage = []
 	 
+	 /**
+	  * Indicated Group message
+	  */
 	 Boolean isGroupMessage = false
 	 
+	 /**
+	  * Users in a Group message
+	  */
 	 List groupMessageUser = []
+	 
+	 /**
+	  * Message Type
+	  */
+	 String messageType
 	  
 	 /**
 	  * Id of the user that message is assigned(Staff to Physician or Vice versa)

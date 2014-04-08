@@ -10,13 +10,17 @@ class BootStrap {
 
     def init = { servletContext ->
 		
-		def draruna = User.findByFirstname("Dr. Aruna")?:new User(firstname:'Dr. Aruna', lastname:'Ramayya', username:'draruna@onehaystack.com', password:'draruna', enabled:true).save(flush: true)
-		def doctorRole = Role.findByAuthority("ROLE_DOCTOR")?: new Role(authority: 'ROLE_DOCTOR').save(flush: true)
+		//def draruna = User.findByFirstname("Dr. Aruna")?:new User(firstname:'Dr. Aruna', lastname:'Ramayya', username:'draruna@onehaystack.com', password:'draruna', enabled:true).save(flush: true)
+		//def doctorRole = Role.findByAuthority("ROLE_DOCTOR")?: new Role(authority: 'ROLE_DOCTOR').save(flush: true)
 		//UserRole.create(draruna, doctorRole, true)
 		
-		if (draruna) {
-			new BasicInfo(userId: draruna.id, physicianIds: ["1", "3"], patientIds: ["1", "2", "4", "5"], professionalIds: ["3"]).save(flush: true)
-		}
+		//def raghu = User.findByFirstname("Raghu")
+		//if (raghu) {
+			//def basicInfo = BasicInfo.findByUserId(raghu.id)
+			//raghu.basicInfo = basicInfo
+			//raghu.save(flush: true)
+			//new BasicInfo(userId: raghu.id, physicianIds: ["3", "6"], patientIds: ["1", "2", "4", "5"], professionalIds: ["3", "6"]).save(flush: true)
+		//}
 		
 		/*def raghu = new User(firstname:'Raghu', lastname:'Gorur', username:'raghu@onehaystack.com', password:'raghu', enabled:true).save(flush: true)
 		def sundar = new User(firstname:'Sundar', lastname:'Ramayya', username:'sundar@onehaystack.com', password:'sundar', enabled:true).save(flush: true)

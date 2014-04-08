@@ -47,7 +47,7 @@ class MessageController {
 		
 		def result = mailMessagingService.getAllMessages(currentUser.id, offset, ITEMS_BY_PAGE, sort, order)
 		
-		render view:"inbox", model:[user:currentUser, messages:result.messages, totalNum:result.totalNum, unreadedNum:result.unreadedNum, max:ITEMS_BY_PAGE, sort:sort, order:order]
+		render view:"inbox", model:[user:currentUser, result: result]//totalNum:result.totalNum, unreadedNum:result.unreadedNum, max:ITEMS_BY_PAGE, sort:sort, order:order]
 	}
 	
 	def indexAll() {
@@ -115,7 +115,7 @@ class MessageController {
 			def contacts = addressBookService.getArray(params.contacts)
 			def circles = addressBookService.getArray(params.circles)
 			
-			flash.message = mailMessagingService.sendMessage(currentUser, contacts, circles, params.text, params.subject, file, isGroupChat)//message(code: 'thread.success')
+			flash.message = mailMessagingService.sendMessage(currentUser, contacts, circles, params.text, params.subject, file, params.messageType, isGroupChat)//message(code: 'thread.success')
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
         }
@@ -126,6 +126,7 @@ class MessageController {
 		def currentUser = springSecurityService.currentUser
 		def toUser = User.get(params.toId)
 		def file = request.getFile("file")
+		def lastMsgId = params.messageId
 
 		if (params.contacts || params.circles) { // Forward or Group Message
 			def isGroupChat = params.groupChat? true:false
@@ -138,14 +139,14 @@ class MessageController {
 			def circles = addressBookService.getArray(params.circles)
 			
 			
-			flash.message = mailMessagingService.forwardMessage(currentUser, contacts, circles, params.messageId, params.text, params.subject, file, isGroupChat)
+			flash.message = mailMessagingService.forwardMessage(currentUser, contacts, circles, lastMsgId, params.text, params.subject, file, isGroupChat)
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
 			
 		} else if (params.toId) { // Normal reply
 			
 			def contacts = addressBookService.getArray(params.toId)
-			flash.message = mailMessagingService.sendMessage(currentUser, contacts, null, params.text, params.subject, file)
+			flash.message = mailMessagingService.sendMessage(currentUser, contacts, null, params.text, params.subject, file, Message.get(lastMsgId).messageType)
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
 		}
