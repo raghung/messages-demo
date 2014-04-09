@@ -143,6 +143,11 @@ class Message {
 	  * Message Type
 	  */
 	 String messageType
+	 
+	 /**
+	  * Priority level
+	  */
+	 Integer priorityLevel = 0
 	  
 	 /**
 	  * Id of the user that message is assigned(Staff to Physician or Vice versa)

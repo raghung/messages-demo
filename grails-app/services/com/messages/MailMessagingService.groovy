@@ -12,58 +12,10 @@ class MailMessagingService {
 	final int MAX_INBOX_TEXT = 30
 	
 	Map getAllMessages(Long userId, int offset, Integer itemsByPage, String sort, String order) {
-		def doctorRole = Role.findByAuthority("ROLE_DOCTOR")
-		def patientRole = Role.findByAuthority("ROLE_USER")
-		def staffRole = Role.findByAuthority("ROLE_STAFF")
-
-		/*def currUser = User.get(userId)
-		def basicInfo = currUser.getBasicInfo()
-		def physicianIds = basicInfo? basicInfo.physicianIds : []
-		def patientIds = basicInfo? basicInfo.patientIds : []*/
-
-		def physicianMsgs = []
-		def practiceGrpMsgs = []
-		def followupMsgs = []
-		def patientMsgs = []
 		
 		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
 
-		// Set the other user who is in conversation with current user
-		for (message in result.messages) {
-			def otherUser = message.fromId == userId? User.get(message.toId) : User.get(message.fromId)
-			
-			if (message.isGroupMessage) {
-				message.otherName = "Group("+ otherUser.firstname + ' ' + otherUser.lastname +")" 
-			} else {
-				message.otherName = otherUser.firstname + ' ' + otherUser.lastname
-			}
-			
-			if (message.text.length() > MAX_INBOX_TEXT) {
-				message.text = message.text.substring(0, MAX_INBOX_TEXT) + ".."
-			}
-			
-			// Physician message -- use physicianIds.contains(otherUser.id.toString()) when needed
-			if (otherUser.getAuthorities().contains(doctorRole)) {
-				if (message.messageType == "practice-group") {
-					practiceGrpMsgs += message	
-				} else {
-					physicianMsgs += message
-				}
-			} else if (otherUser.getAuthorities().contains(patientRole)) { // Patients Message
-				if (message.messageType == "follow-up") {
-					followupMsgs += message
-				} else {	
-					patientMsgs += message
-				}
-			}				
-		}
-		//result.messages = result.messages.sort{it.dateCreated}.reverse()
-		result.physicianMsgs = physicianMsgs.sort{it.dateCreated}.reverse()
-		result.practiceGrpMsgs = practiceGrpMsgs.sort{it.dateCreated}.reverse()
-		result.patientMsgs = patientMsgs.sort{it.dateCreated}.reverse()
-		result.followupMsgs = followupMsgs.sort{it.dateCreated}.reverse()
-		
-		return result
+		return groupMessages(userId, result.messages)
 	}
 	
 	Map getAllThreadMessages(Long currUserId, Message message) {
@@ -125,16 +77,16 @@ class MailMessagingService {
 		
 	}*/
 		
-	String sendMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file, String messageType, boolean isGroupChat=false) {
+	String sendMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file, String messageType, Integer priorityLevel, boolean isGroupChat=false) {
 
-		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, messageType)) {
+		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, messageType, priorityLevel)) {
 			return 'Message sent successfully'
 		}
 		
 		return 'Message sending error'
 	}
 	
-	String forwardMessage(User from, String[] contacts, String[] circles, String lastMsgId, String text, String subject, MultipartFile file, boolean isGroupChat=false) {
+	String forwardMessage(User from, String[] contacts, String[] circles, String lastMsgId, String text, String subject, MultipartFile file, Integer priorityLevel, boolean isGroupChat=false) {
 		
 		def lastMessage = Message.findById(lastMsgId)
 		def forwardMsg = threadMessageService.findAllMessagesOnThread(lastMessage)
@@ -142,7 +94,7 @@ class MailMessagingService {
 			text = text + "\n-- Forward Message --"
 		}
 
-		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, lastMessage.messageType, forwardMsg)) {
+		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, lastMessage.messageType, priorityLevel, forwardMsg)) {
 			return 'Message sent successfully'
 		}
 
@@ -150,7 +102,7 @@ class MailMessagingService {
 	}
 	
 	Message sendThreadMessage(User from, String[] contacts, String[] circles, String text, String subject, 
-								MultipartFile file, boolean isGroupChat=false, String messageType, List forwardMsg = []) {
+								MultipartFile file, boolean isGroupChat=false, String messageType, Integer priorityLevel, List forwardMsg = []) {
 		def message = null
 		def msg = validateMessage(subject, text, file)
 		if (msg.empty) {
@@ -191,8 +143,10 @@ class MailMessagingService {
 			
 			for (toId in toIds) {
 				def toUser = User.findById(toId)
+				def msgArtifact = new MessageArtifact(messageType: messageType, priorityLevel: priorityLevel, text: text, subject: subject, 
+														file: file, forwardMsg: forwardMsg, grpUserIds: grpUserIds)
 				message = threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, 
-																	text, subject, file, messageType, forwardMsg, grpUserIds)
+																	msgArtifact)
 			}
 		}
 		
@@ -262,32 +216,83 @@ class MailMessagingService {
 	}
 	
 	Map searchAll(long userId, String searchText) {
-		def result = Message.search(searchText, [sort:'dateCreated', order:'desc'])
-		result.searchResults = filterMessages(userId, result.searchResults)
 		
-		return result
-	}
-	
-	private List filterMessages(long userId, List messages) {
+		def result = Message.search(searchText, [sort:'dateCreated', order:'desc'])
+		def messages = result.searchResults
+		
 		def resultMessages = []
 		while (messages) {
 			def message = messages[0]
-			def subjectGroup = messages.findAll{
+			def subjectGroup
+			if (message.isGroupMessage) {
+				subjectGroup = messages.findAll{it.subject == message.subject}.sort{it.dateCreated}
+			} else {
+				subjectGroup = messages.findAll{
 					it.subject == message.subject &&
 					((it.fromId == message.fromId && it.toId == message.toId) ||
 					(it.fromId == message.toId && it.toId == message.fromId))
 				}.sort{it.dateCreated}
+			}
 			resultMessages << subjectGroup.last()
 			messages = messages - subjectGroup
 		}
 		
-		// Set the other user who is in conversation with current user
-		for (message in resultMessages) {
-			def otherUser = message.fromId == userId? User.get(message.toId) : User.get(message.fromId)
-			message.otherName = otherUser.firstname + ' ' + otherUser.lastname
-		}
+		return groupMessages(userId, resultMessages)
+	}
+
+	
+	private Map groupMessages(long userId, List messages) {
+		def result = [:]
+		def doctorRole = Role.findByAuthority("ROLE_DOCTOR")
+		def patientRole = Role.findByAuthority("ROLE_USER")
+		def staffRole = Role.findByAuthority("ROLE_STAFF")
+
+		/*def currUser = User.get(userId)
+		def basicInfo = currUser.getBasicInfo()
+		def physicianIds = basicInfo? basicInfo.physicianIds : []
+		def patientIds = basicInfo? basicInfo.patientIds : []*/
+
+		def physicianMsgs = []
+		def practiceGrpMsgs = []
+		def followupMsgs = []
+		def patientMsgs = []
 		
-		return resultMessages
+		// Set the other user who is in conversation with current user
+		for (message in messages) {
+			def otherUser = message.fromId == userId? User.get(message.toId) : User.get(message.fromId)
+			
+			if (message.isGroupMessage) {
+				message.otherName = "Group("+ otherUser.firstname + ' ' + otherUser.lastname +")"
+			} else {
+				message.otherName = otherUser.firstname + ' ' + otherUser.lastname
+			}
+			
+			if (message.text.length() > MAX_INBOX_TEXT) {
+				message.text = message.text.substring(0, MAX_INBOX_TEXT) + ".."
+			}
+			
+			// Physician message -- use physicianIds.contains(otherUser.id.toString()) when needed
+			if (otherUser.getAuthorities().contains(doctorRole)) {
+				if (message.messageType == "practice-group") {
+					practiceGrpMsgs += message
+				} else {
+					physicianMsgs += message
+				}
+			} else if (otherUser.getAuthorities().contains(patientRole)) { // Patients Message
+				if (message.messageType == "follow-up") {
+					followupMsgs += message
+				} else {
+					patientMsgs += message
+				}
+			}
+		}
+		//result.messages = result.messages.sort{it.dateCreated}.reverse()
+		result.physicianMsgs = physicianMsgs.sort{it.dateCreated}.reverse()
+		result.practiceGrpMsgs = practiceGrpMsgs.sort{it.dateCreated}.reverse()
+		result.patientMsgs = patientMsgs.sort{it.dateCreated}.reverse()
+		result.followupMsgs = followupMsgs.sort{it.dateCreated}.reverse()
+		
+		return result
 	}
 	
 }

@@ -19,6 +19,11 @@
 	                <p>&nbsp; <g:checkBox name="circles" value="${circle.id}" checked="false"/> Circle(${circle.circlename})</p>
 	                </g:each>
             	</div>
+            	<div>Priority Level: <select name="priorityLevel">
+                			<option value="1">High</option>
+                			<option value="2">Medium</option>
+                			<option value="3" selected>Low</option>
+                			</select></div>
                 <div>Sub: <select name="messageType">
                 			<option value="custom">Custom</option>
                 			<option value="refer-patient">Refer Patient</option>

@@ -27,13 +27,19 @@ class ThreadMessageService {
      * @param grpUserIds Users in the group chat 
      * @return a Message
      */
-    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, String text, String subject, MultipartFile file, String messageType, List forwardMsg = [], List grpUserIds = []) {
+    Message sendThreadMessage(long fromId, long toId, String fromName, String toName, MessageArtifact msgArtifact) {
         def reply = false
-        def s = subject?.trim()
+        def subject = msgArtifact.subject?.trim()
+		def text = msgArtifact.text?.trim()
+		def file = msgArtifact.file
+		def grpUserIds = msgArtifact.grpUserIds
+		def forwardMsg = msgArtifact.forwardMsg
+		def messageType = msgArtifact.messageType
+		def priorityLevel = msgArtifact.priorityLevel
 
-        Message m = new Message(fromId:fromId, toId: toId, fromName:fromName, toName:toName, text: text.trim(), last:true, lastOnThread:true, subject:s)
+        Message m = new Message(fromId:fromId, toId: toId, fromName:fromName, toName:toName, text: text, last:true, lastOnThread:true, subject: subject)
 
-        if (s) {
+        if (subject) {
             //Find messages between those users with same subject
             def messagesOnThread = findAllMessagesOnThread(m)
             if (messagesOnThread) {
@@ -87,7 +93,12 @@ class ThreadMessageService {
 			} else {
 				m.messageType("custom")
 			}
-			
+			// Set priority Level(1: High, 2: Medium, 3: Low)
+			if (priorityLevel < 1) {
+				m.priorityLevel = 3 // Low priority
+			} else {
+				m.priorityLevel = priorityLevel
+			}
             if (m.save()){
                 messagesOnThread.each{
                      it.numberOfMessagesOnThread = messagesOnThread.size() +1
