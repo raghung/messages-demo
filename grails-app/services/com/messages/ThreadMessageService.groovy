@@ -63,7 +63,8 @@ class ThreadMessageService {
 				} else { 
 					file.transferTo(new File(m.storePath))
 				}
-				 
+				m.text = m.text? m.text+"<br>" : ""
+				m.text += "&lt;&lt; Attachement &gt;&gt;"
 			}
 			// Group Msg and communication is between more than 2 people
 			if (grpUserIds && grpUserIds.size() > 2) {
@@ -74,17 +75,25 @@ class ThreadMessageService {
 				if (m.subject.indexOf("Grp") != 0) { // New Group message
 					m.subject = "Grp: " + m.subject
 				}
+			} else { // Make it non-group message
+				m.isGroupMessage = false
 			}
 			// Forward Msg
 			if (forwardMsg) {
 				if (m.forwardMessage == null) {
 					m.forwardMessage = []
 				}
+				// Store the forwarded message thread
 				for (msg in forwardMsg) {
 					m.forwardMessage += msg.id
 				}
-				if (!m.isGroupMessage) {
+				// Not a group message and same subject 
+				def messages = Message.findAllBySubject(subject, [sort: "dateCreated", order: "desc"])
+				def lastMessage = messages? messages.first() : null
+				if (!m.isGroupMessage && lastMessage && m.subject == lastMessage.subject) {
 					m.subject = "Fwd: " + m.subject
+					m.text = m.text? m.text+"<br>" : ""
+					m.text += "-- Forward Message --"
 				}
 			}
 			// Set message Type
@@ -99,6 +108,12 @@ class ThreadMessageService {
 			} else {
 				m.priorityLevel = priorityLevel
 			}
+			
+			// Set text
+			if (!m.text) {
+				m.text = "-- Blank --"
+			}
+			
             if (m.save()){
                 messagesOnThread.each{
                      it.numberOfMessagesOnThread = messagesOnThread.size() +1

@@ -77,32 +77,29 @@ class MailMessagingService {
 		
 	}*/
 		
-	String sendMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file, String messageType, Integer priorityLevel, boolean isGroupChat=false) {
+	String sendMessage(User from, String[] contacts, String[] circles, String text, String subject, MultipartFile file, String messageType, Integer priorityLevel, boolean isGroupChat=false,  List forwardMsg = []) {
 
-		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, messageType, priorityLevel)) {
+		if (sendThreadMessage(from, contacts, circles, text, subject, file, messageType, priorityLevel, isGroupChat, forwardMsg)) {
 			return 'Message sent successfully'
 		}
 		
 		return 'Message sending error'
 	}
 	
-	String forwardMessage(User from, String[] contacts, String[] circles, String lastMsgId, String text, String subject, MultipartFile file, Integer priorityLevel, boolean isGroupChat=false) {
+	/*String forwardMessage(User from, String[] contacts, String[] circles, String lastMsgId, String text, String subject, MultipartFile file, Integer priorityLevel, boolean isGroupChat=false) {
 		
 		def lastMessage = Message.findById(lastMsgId)
 		def forwardMsg = threadMessageService.findAllMessagesOnThread(lastMessage)
-		if (!isGroupChat) {
-			text = text + "\n-- Forward Message --"
-		}
-
+		
 		if (sendThreadMessage(from, contacts, circles, text, subject, file, isGroupChat, lastMessage.messageType, priorityLevel, forwardMsg)) {
 			return 'Message sent successfully'
 		}
 
 		return 'Message sending error'
-	}
-	
+	}*/
+		
 	Message sendThreadMessage(User from, String[] contacts, String[] circles, String text, String subject, 
-								MultipartFile file, boolean isGroupChat=false, String messageType, Integer priorityLevel, List forwardMsg = []) {
+								MultipartFile file, String messageType, Integer priorityLevel, boolean isGroupChat=false, List forwardMsg = []) {
 		def message = null
 		def msg = validateMessage(subject, text, file)
 		if (msg.empty) {
@@ -134,7 +131,7 @@ class MailMessagingService {
 			toIds = toIds.unique()
 			
 			def grpUserIds = []
-			if (isGroupChat) {
+			if (toIds.size() > 1 && isGroupChat) {
 				for (toId in toIds) {
 					grpUserIds += toId
 				}
@@ -143,10 +140,12 @@ class MailMessagingService {
 			
 			for (toId in toIds) {
 				def toUser = User.findById(toId)
-				def msgArtifact = new MessageArtifact(messageType: messageType, priorityLevel: priorityLevel, text: text, subject: subject, 
+				if (toUser) { // If To User exists
+					def msgArtifact = new MessageArtifact(messageType: messageType, priorityLevel: priorityLevel, text: text, subject: subject, 
 														file: file, forwardMsg: forwardMsg, grpUserIds: grpUserIds)
-				message = threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, 
+					message = threadMessageService.sendThreadMessage(from.id, toUser.id, from.firstname+' '+from.lastname, toUser.firstname+' '+toUser.lastname, 
 																	msgArtifact)
+				}
 			}
 		}
 		
@@ -181,23 +180,22 @@ class MailMessagingService {
 	
 	private String validateMessage(String subject, String text, MultipartFile file) {
 		def msg = ""
-		def imageOkContents = grailsApplication.config.imageOkContents
-		def attachmentNotOk = grailsApplication.config.attachementNotOk
 		def maxTextSize = grailsApplication.config.maxMessageTextSize
 
-		if (subject && (text || !file.empty)) {
+		if (subject) {
 			
 			if (text && text.size() > maxTextSize) {
 				msg = "Message text cannot be more than ${maxTextSize} characters"
 			}
 				
 			if (!file.empty) {
+				def imageOkContents = grailsApplication.config.imageOkContents
+				def attachmentNotOk = grailsApplication.config.attachementNotOk
 				def fileExt = file.originalFilename.substring(file.originalFilename.indexOf(".")).toUpperCase()
+				
 				if (attachmentNotOk.contains(fileExt)) {
-					
 					msg = "File with extension ${fileExt} cannot be attached"
 				} else if (!imageOkContents.contains(file.contentType) && file.bytes.size() > grailsApplication.config.maxAttachFileSize) {
-					
 					msg = "File cannot be more than " + grailsApplication.config.error.maxAttachFileSize
 				} 
 			}

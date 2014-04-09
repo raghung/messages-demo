@@ -34,20 +34,26 @@
 	            <p>&nbsp; <g:checkBox name="circles" value="${circle.id}" checked="false"/> Circle(${circle.circlename})</p>
             </g:each>
         </div>
-		<div><hr></div>
-		
-		<div>&nbsp;<g:checkBox name="groupChat" value="${groupList}"/> Group Chat</div>
 		
 		<div><hr></div>
-        <div><b>Sub: <i>${subject}</i></b><input type="hidden" name="messageId" value="${lastMessageId}"></div>
+		<div><b>Priority Level:</b> <g:select name="priorityLevel" from="[1:'High', 2:'Medium', 3:'Low']" 
+        									optionKey="key" optionValue="value" value="${messages.last().priorityLevel}"/>
+        	&nbsp;<g:checkBox name="groupChat" value="${groupList}"/> <b>Group Chat</b></div>
+        <div><hr></div>	
+		<div><b>Sub:</b><g:select name="messageType" optionKey="key" optionValue="value" value="${messages.last().messageType}"
+								  from="['custom':'custom', 
+									 	 'refer-patient':'Refer Patient', 
+										 'follow-up':'Follow up',
+										 'practice-group':'Practice Group',
+										 'instant-messaging':'Instant Messaging']"/> 
+			&nbsp;<g:textField name="subject" value="${subject}" size="60"/><input type="hidden" name="messageId" value="${lastMessageId}"></div>
         <div><hr></div>
 
-        <div id="thread-message">
+        <div id="thread-message" style="background-color:gainsboro">
         	<g:render template="threadMessage" model="[messages: messages]"/>
         </div><!-- End of Thread message -->
        	
        	<div>	
-       		<input id="subject" type="hidden" name="subject" value="${subject}" />
             <input type="hidden" name="toId" value="${otherUser.id}" />
        		<textarea id="text" name="text" style="width:700px"></textarea>
        	</div>	

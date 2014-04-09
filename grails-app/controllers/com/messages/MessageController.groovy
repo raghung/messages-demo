@@ -1,5 +1,7 @@
 package com.messages
 
+import java.util.List;
+
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
@@ -11,6 +13,7 @@ class MessageController {
 	transient springSecurityService
 	
 	def mailMessagingService
+	def threadMessageService
 	def addressBookService
 	def elasticSearchService
 	def elasticSearchAdminService
@@ -116,6 +119,7 @@ class MessageController {
 			def contacts = addressBookService.getArray(params.contacts)
 			def circles = addressBookService.getArray(params.circles)
 			
+			println "${currentUser}, ${contacts}, ${circles}, ${params.text}, ${params.subject}, ${file}, ${params.messageType}, ${priorityLevel}, ${isGroupChat}"
 			flash.message = mailMessagingService.sendMessage(currentUser, contacts, circles, params.text, params.subject, file, params.messageType, priorityLevel, isGroupChat)//message(code: 'thread.success')
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
@@ -127,31 +131,34 @@ class MessageController {
 		def currentUser = springSecurityService.currentUser
 		def toUser = User.get(params.toId)
 		def file = request.getFile("file")
-		def lastMsgId = params.messageId
+		def lastMessage = Message.get(params.messageId)
 		def priorityLevel = params.priorityLevel? new Integer(params.priorityLevel) : 3
-
-		if (params.contacts || params.circles) { // Forward or Group Message
-			def isGroupChat = params.groupChat? true:false
-			
-			// New Group Chat
-			if (isGroupChat && params.toId) {
-				params.contacts += params.toId
-			}
-			def contacts = addressBookService.getArray(params.contacts)
-			def circles = addressBookService.getArray(params.circles)
-			
-			
-			flash.message = mailMessagingService.forwardMessage(currentUser, contacts, circles, lastMsgId, params.text, params.subject, file, priorityLevel, isGroupChat)
-			elasticSearchService.index(class:Message)
-			elasticSearchAdminService.refresh()
-			
-		} else if (params.toId) { // Normal reply
-			
-			def contacts = addressBookService.getArray(params.toId)
-			flash.message = mailMessagingService.sendMessage(currentUser, contacts, null, params.text, params.subject, file, Message.get(lastMsgId).messageType, priorityLevel)
-			elasticSearchService.index(class:Message)
-			elasticSearchAdminService.refresh()
+		def isGroupChat = params.groupChat? true:false
+		def toId = params.toId
+		
+		def contacts = addressBookService.getArray(params.contacts)
+		def circles = addressBookService.getArray(params.circles)
+		
+		// Check for forward or group message
+		def forwardMsg = []
+		if (contacts || circles || params.subject != lastMessage.subject) {
+			forwardMsg = threadMessageService.findAllMessagesOnThread(lastMessage)	
 		}
+		
+		if (toId) {
+			if (contacts && isGroupChat) { // Adding for group chat
+				contacts += toId
+			} else if (!contacts) { // Adding single user reply
+				contacts = addressBookService.getArray(toId)
+			}
+		}
+		
+		println "${currentUser}, ${contacts}, ${circles}, ${params.text}, ${params.subject}, ${file}, ${params.messageType}, ${priorityLevel}, ${isGroupChat}, ${forwardMsg}"
+		flash.message = mailMessagingService.sendMessage(currentUser, (String[])contacts, circles, params.text, params.subject, file, params.messageType, priorityLevel, isGroupChat, forwardMsg)
+		
+		elasticSearchService.index(class:Message)
+		elasticSearchAdminService.refresh()
+
 		redirect mapping: 'inbox'
 	}
 	
@@ -182,8 +189,6 @@ class MessageController {
 	def addressBook() {
 		redirect mapping: 'addressBook'
 	}
-	
-	def forwardMessage() { }
 	
 	def todo() { }
 

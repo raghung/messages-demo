@@ -11,7 +11,7 @@
         <div class="new_message">
             <g:uploadForm mapping='newMessage'>
                 <div>
-	                Message To:<br>
+	                <b>Message To:</b><br>
 	                <g:each in="${userList}" var="user">
 	                <p>&nbsp; <g:checkBox name="contacts" value="${user.id}" checked="false"/> ${user.firstname} ${user.lastname}</p>
 	                </g:each>
@@ -19,22 +19,20 @@
 	                <p>&nbsp; <g:checkBox name="circles" value="${circle.id}" checked="false"/> Circle(${circle.circlename})</p>
 	                </g:each>
             	</div>
-            	<div>Priority Level: <select name="priorityLevel">
-                			<option value="1">High</option>
-                			<option value="2">Medium</option>
-                			<option value="3" selected>Low</option>
-                			</select></div>
-                <div>Sub: <select name="messageType">
-                			<option value="custom">Custom</option>
-                			<option value="refer-patient">Refer Patient</option>
-                			<option value="follow-up">Follow up</option>
-                			<option value="practice-group">Practice Group</option>
-                			<option value="instant-messaging">Instant Messaging</option>
-                		  </select>&nbsp;<input id="subject" class="subject" type="text" name="subject"/></div>
+            	<div><b>Priority Level:</b> <g:select name="priorityLevel" from="[1:'High', 2:'Medium', 3:'Low']" 
+            									optionKey="key" optionValue="value" value="3"/>
+            			&nbsp;<g:checkBox name="groupChat" value="1" checked="false"/> <b>Group Chat</b></div>
+                <div><b>Sub:</b> <g:select name="messageType" optionKey="key" optionValue="value"
+								  from="['custom':'custom', 
+									 	 'refer-patient':'Refer Patient', 
+										 'follow-up':'Follow up',
+										 'practice-group':'Practice Group',
+										 'instant-messaging':'Instant Messaging']"/>
+						&nbsp;<g:textField name="subject" size="60"/></div>
                 <br />
-                <div>&nbsp;<g:checkBox name="groupChat" value="1" checked="false"/> Group Chat</div>
+                <div></div>
                 <div><textarea id="text" style="width:700px" name="text" maxlength="5000""></textarea></div>
-                <label for="photo">Attachment: </label>
+                <label for="photo"><b>Attachment:</b> </label>
 			    <input type="file" name="file" id="file"/>
 			    <input type="submit" class="buttons" value="Send" />
             </g:uploadForm>

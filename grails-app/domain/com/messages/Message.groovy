@@ -162,7 +162,8 @@ class Message {
 	 //static embedded = ['forwardMessage']
 	 
     static constraints = {
-        subject nullable: true, blank: true
+        subject blank: false
+		text blank: false
         reply nullable: true
         lastOnThread nullable: true
         numberOfMessagesOnThread nullable: true
