@@ -62,7 +62,7 @@ grails.project.dependency.resolution = {
         compile ':cache:1.0.1'
 		compile ":spring-security-core:2.0-RC2"
 		compile ":mongodb:1.3.3"
-		compile ":elasticsearch-gorm:0.0.2.3"
+		compile ":elasticsearch:0.0.2.5"
 		//compile ":quick-search:0.2.6"
 		//compile ":searchable:0.6.6"
 		//compile ":burning-image:0.5.1"

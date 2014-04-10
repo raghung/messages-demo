@@ -96,17 +96,9 @@ class MessageController {
 	def newMessage() {
 		def type = params.messageType // patient(normal, follow up), physician(normal, practice group)
 		def currentUser = springSecurityService.currentUser
-		//def userList = mailMessagingService.getUsersList(currentUser.username)
 		def result = addressBookService.getAddressBook(currentUser.id)
 		
 		render view: 'newMessage', model:[user: currentUser, userList: result.addressList, circleList: result.circlesList]
-		
-		/*def otherUser = User.get(params.toId)
-		if (otherUser) {
-			render view:'newMessage', model:[user:currentUser, otherUser:otherUser]
-		} else {
-			redirect mapping: 'inbox'
-		}*/
 	}
     def saveNewMessage() {
         def currentUser = springSecurityService.currentUser
@@ -120,7 +112,8 @@ class MessageController {
 			def circles = addressBookService.getArray(params.circles)
 			
 			println "${currentUser}, ${contacts}, ${circles}, ${params.text}, ${params.subject}, ${file}, ${params.messageType}, ${priorityLevel}, ${isGroupChat}"
-			flash.message = mailMessagingService.sendMessage(currentUser, contacts, circles, params.text, params.subject, file, params.messageType, priorityLevel, isGroupChat)//message(code: 'thread.success')
+			flash.message = mailMessagingService.sendMessage(currentUser, contacts, circles, params.text, params.subject, 
+																file, params.messageType, priorityLevel, isGroupChat)//message(code: 'thread.success')
 			elasticSearchService.index(class:Message)
 			elasticSearchAdminService.refresh()
         }
@@ -162,6 +155,18 @@ class MessageController {
 		redirect mapping: 'inbox'
 	}
 	
+	def savePriority() {
+		def priorityLevel = params.priorityLevel
+		if (priorityLevel && params.messageId) {
+			def message = Message.get(params.messageId)
+			message.priorityLevel = new Integer(priorityLevel)
+			message.save(flush:true)
+			flash.message = "Priority Level saved"
+		}
+		
+		redirect mapping: 'inbox'
+	}
+	
 	def showImage() {
 		def message = Message.get(params.id)
 		OutputStream out
@@ -172,7 +177,7 @@ class MessageController {
 		}
 	}
 	
-	def download(long id) {
+	def download(String id) {
 		Message documentInstance = Message.get(id)
 		
 		if ( documentInstance == null) {

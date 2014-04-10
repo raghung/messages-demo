@@ -21,7 +21,7 @@
         </g:else>
         <div><input type="button" value="Forward/Group Users >>" onclick="openForward()"></div>
         
-        <g:uploadForm controller="message" action="saveThreadMessage">
+        <g:uploadForm controller="message">
         
         <div id="divForward" style="display:none">
         	<g:each in="${groupList}" var="grpUser">
@@ -36,9 +36,11 @@
         </div>
 		
 		<div><hr></div>
-		<div><b>Priority Level:</b> <g:select name="priorityLevel" from="[1:'High', 2:'Medium', 3:'Low']" 
+		<div>
+			<b>Priority Level:</b> <g:select name="priorityLevel" from="[1:'High', 2:'Medium', 3:'Low']" 
         									optionKey="key" optionValue="value" value="${messages.last().priorityLevel}"/>
-        	&nbsp;<g:checkBox name="groupChat" value="${groupList}"/> <b>Group Chat</b></div>
+        						   <g:actionSubmit value="Save Priority" action="savePriority"/> 
+        </div>
         <div><hr></div>	
 		<div><b>Sub:</b><g:select name="messageType" optionKey="key" optionValue="value" value="${messages.last().messageType}"
 								  from="['custom':'custom', 
@@ -46,7 +48,8 @@
 										 'follow-up':'Follow up',
 										 'practice-group':'Practice Group',
 										 'instant-messaging':'Instant Messaging']"/> 
-			&nbsp;<g:textField name="subject" value="${subject}" size="60"/><input type="hidden" name="messageId" value="${lastMessageId}"></div>
+			&nbsp;<g:textField name="subject" value="${subject}" size="60"/><input type="hidden" name="messageId" value="${lastMessageId}">
+			&nbsp;<g:checkBox name="groupChat" value="${groupList}"/> <b>Group Chat</b></div>
         <div><hr></div>
 
         <div id="thread-message" style="background-color:gainsboro">
@@ -59,7 +62,8 @@
        	</div>	
 	    <label for="photo">Attachments: </label>
 	    <input type="file" name="file" id="upload-file"/>
-	    <input type="submit" class="buttons" value="Send" />
+	    <%--<input type="submit" class="buttons" value="Send" />--%>
+	    <g:actionSubmit value="Send" action="saveThreadMessage"/>
 	    
 	    </g:uploadForm>
 	    
