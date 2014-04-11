@@ -21,7 +21,7 @@
             	</div>
             	<div><b>Priority Level:</b> <g:select name="priorityLevel" from="[1:'High', 2:'Medium', 3:'Low']" 
             									optionKey="key" optionValue="value" value="3"/>
-            			&nbsp;<g:checkBox name="groupChat" value="1" checked="false"/> <b>Group Chat</b></div>
+            			&nbsp;<g:checkBox name="groupChat" value="1" checked="false"/> <b>Group Message</b></div>
                 <div><b>Sub:</b> <g:select name="messageType" optionKey="key" optionValue="value"
 								  from="['custom':'custom', 
 									 	 'refer-patient':'Refer Patient', 

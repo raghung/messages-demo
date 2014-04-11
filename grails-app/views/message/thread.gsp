@@ -49,7 +49,7 @@
 										 'practice-group':'Practice Group',
 										 'instant-messaging':'Instant Messaging']"/> 
 			&nbsp;<g:textField name="subject" value="${subject}" size="60"/><input type="hidden" name="messageId" value="${lastMessageId}">
-			&nbsp;<g:checkBox name="groupChat" value="${groupList}"/> <b>Group Chat</b></div>
+			&nbsp;<g:checkBox name="groupChat" value="${groupList}"/> <b>Group Message</b></div>
         <div><hr></div>
 
         <div id="thread-message" style="background-color:gainsboro">

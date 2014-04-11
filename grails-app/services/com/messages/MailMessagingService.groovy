@@ -11,9 +11,9 @@ class MailMessagingService {
 	
 	final int MAX_INBOX_TEXT = 30
 	
-	Map getAllMessages(Long userId, int offset, Integer itemsByPage, String sort, String order) {
+	Map getAllMessages(Long userId, int offset, Integer itemsByPage, String sort, String order, Integer priorityLevel = 0) {
 		
-		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order)
+		def result = threadMessageService.getAllByThread(userId, offset, itemsByPage, sort, order, priorityLevel)
 
 		return groupMessages(userId, result.messages)
 	}
@@ -270,17 +270,19 @@ class MailMessagingService {
 			}
 			
 			// Physician message -- use physicianIds.contains(otherUser.id.toString()) when needed
-			if (otherUser.getAuthorities().contains(doctorRole)) {
-				if (message.messageType == "practice-group") {
-					practiceGrpMsgs += message
-				} else {
-					physicianMsgs += message
-				}
-			} else if (otherUser.getAuthorities().contains(patientRole)) { // Patients Message
-				if (message.messageType == "follow-up") {
-					followupMsgs += message
-				} else {
-					patientMsgs += message
+			if (otherUser) {
+				if (User.isDoctor(otherUser)) {
+					if (message.messageType == "practice-group") {
+						practiceGrpMsgs += message
+					} else {
+						physicianMsgs += message
+					}
+				} else if (User.isPatient(otherUser)) { // Patients Message
+					if (message.messageType == "follow-up") {
+						followupMsgs += message
+					} else {
+						patientMsgs += message
+					}
 				}
 			}
 		}

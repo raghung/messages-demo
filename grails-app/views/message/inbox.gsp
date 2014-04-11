@@ -9,6 +9,8 @@
 		<g:if test="${flash.message}"><div style="color:red">${flash.message}</div></g:if>
 		||&nbsp;<g:link mapping="inbox">Inbox</g:link>&nbsp;||&nbsp;<%--<g:link controller="message" action="indexAll">Index All</g:link>--%>
 		<g:link mapping="addressBook">Address Book</g:link>&nbsp;||&nbsp;
+		<g:link mapping="addressBook">To Do</g:link>&nbsp;||&nbsp;
+		<g:link mapping="addressBook">Basic Info</g:link>&nbsp;||&nbsp;
 		<table>
 			<tr>
 				<td colspan=2 align="right"><g:link mapping="newMessage">New Message</g:link></td>
@@ -18,6 +20,10 @@
 					</g:form>
 				</td>
 			</tr>
+			<tr><td>
+				<b>Messages Priority:</b> <g:select name="priorityLevel" from="[0:'All', 1:'High', 2:'Medium', 3:'Low']" 
+        									optionKey="key" optionValue="value" value="${priorityLevel}" onchange="getPriorityMessages()"/>
+				</td></tr>
 		</table>
 		<table>
 			<thead>
@@ -93,5 +99,11 @@
 				</g:each>
 			</tbody>
 		</table>
+	<g:javascript>
+		function getPriorityMessages() {
+			var val = document.getElementById('priorityLevel').value
+			location.href="${createLink(controller: 'message', action: 'messagePriority', params: [priorityLevel: ''])}" + val;
+		}
+	</g:javascript>	
 	</body>
 </html>

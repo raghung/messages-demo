@@ -138,9 +138,9 @@ class ThreadMessageService {
      * @param order 'asc' or 'desc' for ascendig or descending order.
      * @return a map with: messages (the list of Messages), totalNum (the total num of messages, for the pagination), unreadedNum (the number of unreaded messages)
      */
-    Map getAllByThread(long id, int offset = 0, int itemsByPage = -1, String sort='dateCreated', String order='asc'){
+    Map getAllByThread(long id, int offset = 0, int itemsByPage = -1, String sort='dateCreated', String order='asc', int priorityLevel = 0){
         def result = [:]
-        def resultMessages = getThreads (id, true, true)
+        def resultMessages = getThreads (id, true, true, priorityLevel)
         result.totalNum = resultMessages.size()
         result.unreadedNum = resultMessages.count{ it.readed == false }
         result.messages = messagesSortAndPagination (resultMessages, offset, itemsByPage, sort, order)
@@ -257,23 +257,40 @@ class ThreadMessageService {
      * @param order 'asc' or 'desc' for ascending or descending order.
      * @return a list of Messages
      */
-    List<Message> getThreads(long id, boolean received, boolean sent){
+    List<Message> getThreads(long id, boolean received, boolean sent, int priorityLevel = 0){
         def resultMessages = []
         def messages = []
 
         if (received && sent) {
-            messages = Message.createCriteria().list{
-                or{
-                    and {
-                        eq 'fromId', id
-                        eq 'fromDeletedOnThread', false
-                    }
-                    and {
-                        eq 'toId', id
-                        eq 'toDeletedOnThread', false
-                    }
-                }	
-            }
+			def criteria = Message.createCriteria()
+			if (priorityLevel > 0) {
+	            messages = criteria.list{
+	                or{
+	                    and {
+	                        eq 'fromId', id
+	                        eq 'fromDeletedOnThread', false
+	                    }
+	                    and {
+	                        eq 'toId', id
+	                        eq 'toDeletedOnThread', false
+	                    }
+	                }
+					eq 'priorityLevel', priorityLevel 	
+	            }
+			} else {
+				messages = criteria.list{
+					or{
+						and {
+							eq 'fromId', id
+							eq 'fromDeletedOnThread', false
+						}
+						and {
+							eq 'toId', id
+							eq 'toDeletedOnThread', false
+						}
+					}
+				}
+			}
         } else if (received) {
             messages = Message.findAllByToIdAndToDeletedOnThread(id, false)
         } else if (sent) {

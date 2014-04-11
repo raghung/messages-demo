@@ -48,9 +48,34 @@ class MessageController {
 			}
 		}
 		
-		def result = mailMessagingService.getAllMessages(currentUser.id, offset, ITEMS_BY_PAGE, sort, order)
+		int priorityLevel = 0
+		if (User.isDoctor(currentUser)) {
+			priorityLevel = 1
+		}
 		
-		render view:"inbox", model:[user:currentUser, result: result]//totalNum:result.totalNum, unreadedNum:result.unreadedNum, max:ITEMS_BY_PAGE, sort:sort, order:order]
+		def result = mailMessagingService.getAllMessages(currentUser.id, offset, ITEMS_BY_PAGE, sort, order, priorityLevel)
+		
+		render view:"inbox", model:[user:currentUser, priorityLevel: priorityLevel, result: result]//totalNum:result.totalNum, unreadedNum:result.unreadedNum, max:ITEMS_BY_PAGE, sort:sort, order:order]
+	}
+	
+	def messagePriority() {
+		def currentUser = springSecurityService.currentUser
+		def offset = 0
+		def sort = 'readed'
+		def order = 'desc'
+		def priorityLevel = 0
+		
+		if (params.priorityLevel) {
+			try {
+				priorityLevel = Integer.parseInt(params.priorityLevel)
+			} catch (Exception e) {
+				priorityLevel = 0
+			}
+		}
+		
+		def result = mailMessagingService.getAllMessages(currentUser.id, offset, ITEMS_BY_PAGE, sort, order, priorityLevel)
+		
+		render view:"inbox", model:[user:currentUser, priorityLevel: priorityLevel, result: result]
 	}
 	
 	def indexAll() {
@@ -158,9 +183,13 @@ class MessageController {
 	def savePriority() {
 		def priorityLevel = params.priorityLevel
 		if (priorityLevel && params.messageId) {
-			def message = Message.get(params.messageId)
-			message.priorityLevel = new Integer(priorityLevel)
-			message.save(flush:true)
+			def messages = threadMessageService.findAllMessagesOnThread(Message.get(params.messageId))
+			def level = new Integer(priorityLevel)
+			messages.each {
+				it.priorityLevel = level
+				it.save(flush:true)
+			}
+
 			flash.message = "Priority Level saved"
 		}
 		

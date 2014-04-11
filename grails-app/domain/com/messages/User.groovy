@@ -38,6 +38,18 @@ class User {
 		UserRole.findAllByUser(this).collect { it.role } as Set
 	}
 	
+	static boolean isDoctor(User user) {
+		def role = Role.findByAuthority("ROLE_DOCTOR")
+		if (role && UserRole.get(user.id, role.id))
+			return true
+		return false
+	}
+	static boolean isPatient(User user) {
+		def role = Role.findByAuthority("ROLE_USER")
+		if (role && UserRole.get(user.id, role.id))
+			return true
+		return false
+	}
 	BasicInfo getBasicInfo() {
 		BasicInfo.findByUserId(this.id)
 	}
