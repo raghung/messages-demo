@@ -6,6 +6,7 @@
         <link rel="stylesheet" href="${resource(dir: 'css', file: 'main.css')}" type="text/css">
 	</head>
 	<body>
+		<g:if test="${flash.message}"><div style="color:red">${flash.message}</div></g:if>
 		&nbsp;<g:link mapping="inbox">Inbox</g:link> &gt; Messages
 		<div><hr></div>
 		<g:if test="${groupList}">
@@ -19,8 +20,13 @@
         <g:else>
         	<div><h2>Conversation with ${otherUser.firstname} ${otherUser.lastname}</h2></div>
         </g:else>
-        <div><input type="button" value="Forward/Group Users >>" onclick="openForward()"></div>
-        
+        <table>
+        	<tr>
+        		<td><input type="button" value="Forward/Group Users >>" onclick="openForward()"></td>
+        		<td><input type="button" value="ToDo List" onclick="toDoList()"></td>
+        	</tr>
+        </table>
+
         <g:uploadForm controller="message">
         
         <div id="divForward" style="display:none">
@@ -34,6 +40,13 @@
 	            <p>&nbsp; <g:checkBox name="circles" value="${circle.id}" checked="false"/> Circle(${circle.circlename})</p>
             </g:each>
         </div>
+		<table id="tblAddTask" style="display:none">
+			<tr>
+				<td><g:textField name="newSubject" placeholder="Enter Task.." size="60"/></td>
+				<td><g:datePicker name="newDueDate" default="${new Date()}"/></td>
+				<td><g:actionSubmit value="Add" action="addTask"/></td>
+			</tr>
+		</table>
 		
 		<div><hr></div>
 		<div>
@@ -73,7 +86,15 @@
         });
         function openForward() {
         	var ele = document.getElementById('divForward')
+        	var task = document.getElementById('tblAddTask')
         	ele.style.display = ''
+        	task.style.display = 'none'
+        }
+        function toDoList() {
+        	var ele = document.getElementById('divForward')
+        	var task = document.getElementById('tblAddTask')
+        	ele.style.display = 'none'
+        	task.style.display = ''
         }
         </g:javascript>
 	</body>

@@ -11,6 +11,7 @@ class UrlMappings {
 		name view: "/view" {controller = 'message'; action = 'view'}
 		name newMessage: "/newMessage" {controller = 'message'; action = [POST:'saveNewMessage', GET:'newMessage']}
 		name addressBook: "/addressBook" {controller = 'addressBook'; action = 'book'}
+		name toDo: "/toDo" {controller = 'toDo'; action = 'tasks'}
 		"500"(view:'/error')
 	}
 }

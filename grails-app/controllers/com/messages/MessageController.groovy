@@ -78,6 +78,25 @@ class MessageController {
 		render view:"inbox", model:[user:currentUser, priorityLevel: priorityLevel, result: result]
 	}
 	
+	def addTask() {
+		
+		def currentUser = springSecurityService.currentUser
+		
+		def subject = params.newSubject
+		def dueDate = params.newDueDate
+		def messageId = params.messageId
+		
+		def toDo = new ToDo(userId: currentUser.id, subject: subject, messageId: messageId, dueDate: dueDate)
+		try {
+			toDo.save(flush:true, failOnError: true)
+			flash.message = "Task added to list"
+		} catch(Exception e) {
+			flash.message = "Error saving Task"
+		}
+		
+		redirect action:"view", params: [messageId: messageId]
+	}
+	
 	def indexAll() {
 		elasticSearchService.index()
 		elasticSearchAdminService.refresh()

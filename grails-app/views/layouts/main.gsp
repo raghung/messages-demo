@@ -10,6 +10,7 @@
 		<title><g:layoutTitle default="Grails"/></title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="${resource(dir: 'css', file: 'main.css')}" type="text/css">
+		<r:require modules="application"/>
 		<g:layoutHead/>
 		<r:layoutResources />
 	</head>
@@ -19,6 +20,7 @@
      	</sec:ifLoggedIn>
      	<hr>
 		<g:layoutBody/>
+		
 		<g:javascript library="application"/>
 		<r:layoutResources />
 	</body>
